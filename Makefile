@@ -4,7 +4,7 @@
 #
 
 LDFLAGS=
-CXXFLAGS=-std=c++11 -g
+CXXFLAGS=-std=c++11
 
 %.o: %.cpp
 	g++ $(CXXFLAGS) -o $@ -c $^
@@ -15,7 +15,7 @@ P0: main.o tree.o
 all: P0
 
 clean:
-	rm -rf *.o P0
+	rm -rf *.o
 
 .PHONY: clean
 .SECONDARY:

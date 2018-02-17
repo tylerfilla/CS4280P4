@@ -20,11 +20,6 @@ class tree
     struct node
     {
         /**
-         * The parent of this node.
-         */
-        node* m_parent;
-
-        /**
          * The left child of this node.
          */
         node* m_child_left;
@@ -51,22 +46,17 @@ class tree
     node* m_root;
 
     /**
-     * Visit all nodes in the subtree rooted by the given node using an inorder traversal.
-     *
-     * @param p_node The subtree root node
-     * @param visitor The visitor callable
-     *
-     * @tparam VisitorT The type of the visitor callable
+     * @hide
      */
     template<typename VisitorT>
-    void visit_node_inorder(node* p_node, VisitorT visitor)
+    void __visit_node_preorder(node* p_node, unsigned int depth, VisitorT visitor)
     {
         if (p_node == nullptr)
             return;
 
-        visit_node_inorder(p_node->m_child_left, visitor);
-        visitor(p_node);
-        visit_node_inorder(p_node->m_child_right, visitor);
+        visitor(p_node, depth);
+        __visit_node_preorder(p_node->m_child_left, depth + 1, visitor);
+        __visit_node_preorder(p_node->m_child_right, depth + 1, visitor);
     }
 
     /**
@@ -79,13 +69,46 @@ class tree
      */
     template<typename VisitorT>
     void visit_node_preorder(node* p_node, VisitorT visitor)
+    { __visit_node_preorder(p_node, 0, visitor); }
+
+    /**
+     * @hide
+     */
+    template<typename VisitorT>
+    void __visit_node_inorder(node* p_node, unsigned int depth, VisitorT visitor)
     {
         if (p_node == nullptr)
             return;
 
-        visitor(p_node);
-        visit_node_preorder(p_node->m_child_left, visitor);
-        visit_node_preorder(p_node->m_child_right, visitor);
+        __visit_node_inorder(p_node->m_child_left, depth + 1, visitor);
+        visitor(p_node, depth);
+        __visit_node_inorder(p_node->m_child_right, depth + 1, visitor);
+    }
+
+    /**
+     * Visit all nodes in the subtree rooted by the given node using an inorder traversal.
+     *
+     * @param p_node The subtree root node
+     * @param visitor The visitor callable
+     *
+     * @tparam VisitorT The type of the visitor callable
+     */
+    template<typename VisitorT>
+    void visit_node_inorder(node* p_node, VisitorT visitor)
+    { __visit_node_inorder(p_node, 0, visitor); }
+
+    /**
+     * @hide
+     */
+    template<typename VisitorT>
+    void __visit_node_postorder(node* p_node, unsigned int depth, VisitorT visitor)
+    {
+        if (p_node == nullptr)
+            return;
+
+        __visit_node_preorder(p_node->m_child_left, depth + 1, visitor);
+        __visit_node_preorder(p_node->m_child_right, depth + 1, visitor);
+        visitor(p_node, depth);
     }
 
     /**
@@ -98,14 +121,7 @@ class tree
      */
     template<typename VisitorT>
     void visit_node_postorder(node* p_node, VisitorT visitor)
-    {
-        if (p_node == nullptr)
-            return;
-
-        visit_node_preorder(p_node->m_child_left, visitor);
-        visit_node_preorder(p_node->m_child_right, visitor);
-        visitor(p_node);
-    }
+    { __visit_node_postorder(p_node, 0, visitor); }
 
     /**
      * @hide
@@ -193,10 +209,10 @@ public:
     template<typename VisitorT>
     void traverse_inorder(VisitorT visitor)
     {
-        visit_node_inorder(m_root, [&](node* p_node)
+        visit_node_inorder(m_root, [&](node* p_node, unsigned int depth)
         {
             for (auto&& word : p_node->m_words)
-            { visitor(word); }
+            { visitor(word, p_node->m_words.size(), depth); }
         });
     }
 
@@ -209,10 +225,10 @@ public:
     template<typename VisitorT>
     void traverse_preorder(VisitorT visitor)
     {
-        visit_node_preorder(m_root, [&](node* p_node)
+        visit_node_preorder(m_root, [&](node* p_node, unsigned int depth)
         {
             for (auto&& word : p_node->m_words)
-            { visitor(word); }
+            { visitor(word, p_node->m_words.size(), depth); }
         });
     }
 
@@ -225,10 +241,10 @@ public:
     template<typename VisitorT>
     void traverse_postorder(VisitorT visitor)
     {
-        visit_node_postorder(m_root, [&](node* p_node)
+        visit_node_postorder(m_root, [&](node* p_node, unsigned int depth)
         {
             for (auto&& word : p_node->m_words)
-            { visitor(word); }
+            { visitor(word, p_node->m_words.size(), depth); }
         });
     }
 };

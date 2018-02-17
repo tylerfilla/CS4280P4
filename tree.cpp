@@ -12,7 +12,9 @@ p0::tree::tree() : m_root(nullptr)
 
 p0::tree::~tree()
 {
-    visit_node_postorder(m_root, [](p0::tree::node* node) { delete node; });
+    // Do a postorder traversal over all nodes and delete them
+    visit_node_postorder(m_root, [](p0::tree::node* node, unsigned int depth)
+    { delete node; });
 }
 
 void p0::tree::add_word(const std::string& word)
@@ -34,11 +36,11 @@ void p0::tree::add_word(const std::string& word)
         {
             // Create new node for the word
             auto node = new p0::tree::node {};
-            node->m_parent = parent;
             node->m_length = word.length();
             node->m_words.insert(word);
 
             // Add node to tree
+            // A value of true for side indicates the node should be placed to the right
             if (side)
             {
                 parent->m_child_right = node;
