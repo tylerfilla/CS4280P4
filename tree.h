@@ -6,13 +6,15 @@
 #ifndef P0_TREE_H
 #define P0_TREE_H
 
-#include <iostream> // FIXME
 #include <set>
 #include <string>
 
 namespace p0
 {
 
+/**
+ * A binary search tree of strings, grouped by their lengths.
+ */
 class tree
 {
     struct node
@@ -106,35 +108,32 @@ class tree
     }
 
     /**
-     * Internal.
      * @hide
      */
     template<typename CallbackT>
     void __search(node* p_node, unsigned int length, node* parent, bool side, CallbackT callback)
     {
-        std::cout << "__search; p_node: " << p_node << ", length: " << length << ", side: " << side << "\n";
         if (p_node == nullptr)
         {
             // Could not find the node
             // Report back enough information to add a node here, if desired
-            std::cout << "not found, reporting back\n";
             callback(nullptr, parent, side);
         }
         else
         {
             if (length == p_node->m_length)
             {
-                std::cout << "calling callback\n";
+                // Node found
                 callback(p_node, parent, side);
             }
             else if (length < p_node->m_length)
             {
-                std::cout << "looking left\n";
+                // Look to the left
                 __search(p_node->m_child_left, length, p_node, false, callback);
             }
             else if (length > p_node->m_length)
             {
-                std::cout << "looking right\n";
+                // Look to the right
                 __search(p_node->m_child_right, length, p_node, true, callback);
             }
         }
@@ -157,6 +156,10 @@ class tree
 
 public:
     tree();
+
+    template<typename IteratorT>
+    tree(IteratorT begin, IteratorT end) : tree()
+    { add_words(begin, end); }
 
     ~tree();
 
@@ -190,7 +193,6 @@ public:
     template<typename VisitorT>
     void traverse_inorder(VisitorT visitor)
     {
-        std::cout << "traversing in order\n";
         visit_node_inorder(m_root, [&](node* p_node)
         {
             for (auto&& word : p_node->m_words)

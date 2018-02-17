@@ -66,13 +66,25 @@ int main(int argc, char* argv[])
     }
 
     // Build tree with input words
-    p0::tree tree;
-    tree.add_words(input_words.cbegin(), input_words.cend());
+    p0::tree word_tree(input_words.begin(), input_words.end());
 
-    tree.traverse_inorder([](const std::string& word)
-    {
-        std::cout << ">" << word << "\n";
-    });
+    // Inorder traversal
+    std::cout << "inorder traversal:\n";
+    word_tree.traverse_inorder([](const std::string& word)
+    { std::cout << word << "\n"; });
+    std::cout << "\n";
+
+    // Preorder traversal
+    std::cout << "preorder traversal:\n";
+    word_tree.traverse_preorder([](const std::string& word)
+    { std::cout << word << "\n"; });
+    std::cout << "\n";
+
+    // Postorder traversal
+    std::cout << "postorder traversal:\n";
+    word_tree.traverse_postorder([](const std::string& word)
+    { std::cout << word << "\n"; });
+    std::cout << "\n";
 
     return 0;
 }
