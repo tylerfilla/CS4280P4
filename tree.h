@@ -106,8 +106,8 @@ class tree
         if (p_node == nullptr)
             return;
 
-        __visit_node_preorder(p_node->m_child_left, depth + 1, visitor);
-        __visit_node_preorder(p_node->m_child_right, depth + 1, visitor);
+        __visit_node_postorder(p_node->m_child_left, depth + 1, visitor);
+        __visit_node_postorder(p_node->m_child_right, depth + 1, visitor);
         visitor(p_node, depth);
     }
 

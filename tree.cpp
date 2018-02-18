@@ -7,13 +7,13 @@
 
 p0::tree::tree() : m_root(nullptr)
 {
-    m_root = new p0::tree::node {};
+    m_root = new node {};
 }
 
 p0::tree::~tree()
 {
     // Do a postorder traversal over all nodes and delete them
-    visit_node_postorder(m_root, [](p0::tree::node* node, unsigned int depth)
+    visit_node_postorder(m_root, [](tree::node* node, unsigned int depth)
     { delete node; });
 }
 
@@ -29,13 +29,13 @@ void p0::tree::add_word(const std::string& word)
 
     // Search for a position in the tree for the word
     // Insert the word at this position
-    search(m_root, word.length(), [&](p0::tree::node* node, p0::tree::node* parent, bool side)
+    search(m_root, word.length(), [&](tree::node* node, tree::node* parent, bool side)
     {
         // If no node for this word was found
         if (node == nullptr)
         {
             // Create new node for the word
-            auto node = new p0::tree::node {};
+            node = new tree::node {};
             node->m_length = word.length();
             node->m_words.insert(word);
 
