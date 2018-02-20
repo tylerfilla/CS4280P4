@@ -1,26 +1,9 @@
 Tyler Filla
 CS 4280
-Project 0
+Project 1
 
 Building
 ========
 
 Run the following command:
 $ make
-
-Usage
-=====
-
-Use the P0 executable like so:
-
-$ P0
-[input text]
-
-$ P0 < some_file.txt
-
-$ P0 some_file
-
-Appendix
-========
-
-Additionally, a *.pdf file is included with hand drawn trees as mentioned in the instructions.

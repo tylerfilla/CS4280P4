@@ -1,23 +1,23 @@
 /*
  * Tyler Filla
- * CS4280 - P0
+ * CS4280 - P1
  */
 
 #include "tree.h"
 
-p0::tree::tree() : m_root(nullptr)
+p1::tree::tree() : m_root(nullptr)
 {
     m_root = new node {};
 }
 
-p0::tree::~tree()
+p1::tree::~tree()
 {
     // Do a postorder traversal over all nodes and delete them
     visit_node_postorder(m_root, [](tree::node* node, unsigned int depth)
     { delete node; });
 }
 
-void p0::tree::add_word(const std::string& word)
+void p1::tree::add_word(const std::string& word)
 {
     // If root is empty, add word to it
     if (m_root->m_words.size() == 0)

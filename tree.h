@@ -1,15 +1,15 @@
 /*
  * Tyler Filla
- * CS 4280 - P0
+ * CS 4280 - P1
  */
 
-#ifndef P0_TREE_H
-#define P0_TREE_H
+#ifndef P1_TREE_H
+#define P1_TREE_H
 
 #include <set>
 #include <string>
 
-namespace p0
+namespace p1
 {
 
 /**
@@ -249,6 +249,6 @@ public:
     }
 };
 
-} // namespace p0
+} // namespace p1
 
-#endif // #ifndef P0_TREE_H
+#endif // #ifndef P1_TREE_H

@@ -1,6 +1,6 @@
 /*
  * Tyler Filla
- * CS 4280 - P0
+ * CS 4280 - P1
  */
 
 #include <fstream>
@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
     }
 
     // Build tree with input words
-    p0::tree word_tree(input_words.begin(), input_words.end());
+    p1::tree word_tree(input_words.begin(), input_words.end());
 
     // Try to open preorder result file
     std::ofstream output_preorder(input_name + ".preorder");
@@ -159,9 +159,9 @@ int main(int argc, char* argv[])
         using traversal = typename std::function<void(const std::string&, unsigned int, unsigned int)>;
 
         // Perform preorder, inorder, and postorder traversals
-        do_traversal(std::bind(&p0::tree::traverse_preorder<traversal>, &word_tree, _1), output_preorder);
-        do_traversal(std::bind(&p0::tree::traverse_inorder<traversal>, &word_tree, _1), output_inorder);
-        do_traversal(std::bind(&p0::tree::traverse_postorder<traversal>, &word_tree, _1), output_postorder);
+        do_traversal(std::bind(&p1::tree::traverse_preorder<traversal>, &word_tree, _1), output_preorder);
+        do_traversal(std::bind(&p1::tree::traverse_inorder<traversal>, &word_tree, _1), output_inorder);
+        do_traversal(std::bind(&p1::tree::traverse_postorder<traversal>, &word_tree, _1), output_postorder);
     }
 
     return 0;
