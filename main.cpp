@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
         // HACK: This will get cleaned up on termination
         input_ptr = new std::ifstream(file_name, std::ios::binary);
 
-        if (!input_ptr)
+        if (!*input_ptr)
         {
             std::cerr << "error: could not open file " << file_name << "\n";
             return 1;

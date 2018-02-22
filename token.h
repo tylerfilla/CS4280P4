@@ -7,6 +7,8 @@
 #ifndef P1_TOKEN_H
 #define P1_TOKEN_H
 
+#include <string>
+
 namespace p1
 {
 
@@ -21,10 +23,11 @@ enum token_type
 struct token
 {
     token_type type;
-    unsigned int begin_column;
-    unsigned int begin_line;
-    unsigned int end_column;
-    unsigned int end_line;
+    std::string content;
+    unsigned int line_begin;
+    unsigned int line_end;
+    unsigned int column_begin;
+    unsigned int column_end;
 };
 
 } // namespace p1
