@@ -6,16 +6,17 @@
 LDFLAGS=
 CXXFLAGS=-std=c++11
 
+.PHONY: all
+all: scanner
+
 %.o: %.cpp
 	g++ $(CXXFLAGS) -o $@ -c $^
 
-P1: main.o tree.o
+scanner: main.o
 	g++ -o $@ $^ $(LDFLAGS)
 
-all: P0
-
+.PHONY: clean
 clean:
 	rm -rf *.o
 
-.PHONY: clean
 .SECONDARY:

@@ -1,168 +1,55 @@
 /*
  * Tyler Filla
- * CS 4280 - P1
+ * CS 4280
+ * Project 1
  */
 
 #include <fstream>
-#include <functional>
 #include <iostream>
+#include <iterator>
 #include <string>
-#include <vector>
 
-#include "tree.h"
-
-/**
- * Do a traversal using the given traversal callable and output.
- *
- * @param traversal The traversal callable
- * @param output The output
- *
- * @tparam TraversalT The traversal callable type
- */
-template<typename TraversalT>
-static void do_traversal(TraversalT traversal, std::ostream& output)
-{
-    unsigned int last_length = 0;
-    unsigned int length_count = 0;
-
-    traversal([&](const std::string& word, unsigned int num_length, unsigned int depth)
-    {
-        if (word.length() != last_length)
-        {
-            // If not first line, end previous line
-            if (last_length != 0)
-            {
-                output << "\n";
-            }
-
-            // Add two-space indents according to depth
-            for (unsigned int d = 0; d < depth; ++d)
-            {
-                output << "  ";
-            }
-
-            // Add length prefix
-            output << word.length() << " ";
-
-            // Clear length counter
-            length_count = 0;
-        }
-
-        // Output word itself
-        output << word;
-
-        // Output spaces between words, but not after the last word
-        if (length_count < num_length - 1)
-        {
-            output << " ";
-        }
-
-        last_length = word.length();
-        length_count++;
-    });
-
-    // End the last line of the output
-    output << "\n";
-}
+#include "scanner.h"
+#include "scanner_tester.h"
 
 int main(int argc, char* argv[])
 {
-    // Require that the user supply either zero or one argument
-    if (argc > 2)
-    {
-        std::cerr << "error: invalid arguments\n";
-        return 1;
-    }
-
-    // The input stream to read from
-    // By default, standard input will be used
+    // Read from standard input by default
     std::istream* input_ptr = &std::cin;
-
-    // The name of the input source
-    // This will be used as the basenames for the result files
     std::string input_name = "out";
 
-    // If user arguments are provided
+    // If the user provided arguments
     if (argc > 1)
     {
+        // Get the basename from first user argument
+        // Concatenate the *.sp18 file extension to build the file name
         input_name = argv[1];
+        std::string file_name = input_name + ".sp18";
 
-        // Build full filename
-        auto full_name = input_name + ".sp18";
-
-        // Open file for read
+        // Try to open the given file
         // HACK: This will get cleaned up on termination
-        input_ptr = new std::ifstream(full_name);
+        input_ptr = new std::ifstream(file_name);
 
-        // Make sure file opened correctly
-        if (!*input_ptr)
+        if (!input_ptr)
         {
-            std::cerr << "error: could not open file " << full_name << "\n";
+            std::cerr << "error: could not open file " << file_name << "\n";
             return 1;
         }
     }
 
+    // Construct character iterators on the input stream
     auto& input = *input_ptr;
+    std::istreambuf_iterator<char> input_begin(input);
+    std::istreambuf_iterator<char> input_end {};
 
-    // An array of all input words
-    std::vector<std::string> input_words;
+    // Construct scanner object
+    p1::scanner<decltype(input_begin)> scanner(input_begin, input_end);
 
-    // Scan words from input
-    // Words are delimited by whitespace
-    while (true)
-    {
-        std::string word;
-        input >> word;
+    // Construct test harness on scanner
+    p1::scanner_tester<decltype(input_begin)> tester(scanner);
 
-        if (input.eof())
-            break;
-
-        input_words.push_back(std::move(word));
-    }
-
-    // An input file with no words is an error
-    if (input_words.empty())
-    {
-        std::cerr << "error: input file contains no words\n";
-        return 1;
-    }
-
-    // Build tree with input words
-    p1::tree word_tree(input_words.begin(), input_words.end());
-
-    // Try to open preorder result file
-    std::ofstream output_preorder(input_name + ".preorder");
-    if (!output_preorder)
-    {
-        std::cerr << "error: could not open preorder result file " << input_name << ".preorder\n";
-        return 1;
-    }
-
-    // Try to open inorder result file
-    std::ofstream output_inorder(input_name + ".inorder");
-    if (!output_inorder)
-    {
-        std::cerr << "error: could not open inorder result file " << input_name << ".inorder\n";
-        return 1;
-    }
-
-    // Try to open postorder result file
-    std::ofstream output_postorder(input_name + ".postorder");
-    if (!output_postorder)
-    {
-        std::cerr << "error: could not open postorder result file " << input_name << ".postorder\n";
-        return 1;
-    }
-
-    {
-        using namespace std::placeholders;
-        using traversal = typename std::function<void(const std::string&, unsigned int, unsigned int)>;
-
-        // Perform preorder, inorder, and postorder traversals
-        do_traversal(std::bind(&p1::tree::traverse_preorder<traversal>, &word_tree, _1), output_preorder);
-        do_traversal(std::bind(&p1::tree::traverse_inorder<traversal>, &word_tree, _1), output_inorder);
-        do_traversal(std::bind(&p1::tree::traverse_postorder<traversal>, &word_tree, _1), output_postorder);
-    }
+    // Test the scanner
+    tester.test_scanner();
 
     return 0;
 }
