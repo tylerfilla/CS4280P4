@@ -16,19 +16,17 @@ int main(int argc, char* argv[])
 {
     // Read from standard input by default
     std::istream* input_ptr = &std::cin;
-    std::string input_name = "out";
 
     // If the user provided arguments
     if (argc > 1)
     {
         // Get the basename from first user argument
         // Concatenate the *.sp18 file extension to build the file name
-        input_name = argv[1];
-        auto file_name = std::string(input_name) + ".sp18";
+        auto file_name = std::string(argv[1]) + ".sp18";
 
         // Try to open the given file
         // HACK: This will get cleaned up on termination
-        input_ptr = new std::ifstream(file_name); // TODO: Binary input
+        input_ptr = new std::ifstream(file_name, std::ios::binary);
 
         if (!input_ptr)
         {
