@@ -24,11 +24,11 @@ int main(int argc, char* argv[])
         // Get the basename from first user argument
         // Concatenate the *.sp18 file extension to build the file name
         input_name = argv[1];
-        std::string file_name = input_name + ".sp18";
+        auto file_name = std::string(input_name) + ".sp18";
 
         // Try to open the given file
         // HACK: This will get cleaned up on termination
-        input_ptr = new std::ifstream(file_name);
+        input_ptr = new std::ifstream(file_name); // TODO: Binary input
 
         if (!input_ptr)
         {
