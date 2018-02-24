@@ -129,14 +129,16 @@ class scanner
             return base + 16;
         case ']':
             return base + 17;
-        case ' ':   // WS: space
+        case '&':
             return base + 18;
-        case '\t':  // WS: horizontal tab
+        case ' ':   // WS: space
             return base + 19;
-        case '\r':  // WS: carriage return (CR)
+        case '\t':  // WS: horizontal tab
             return base + 20;
-        case '\n':  // WS: linefeed (LF)
+        case '\r':  // WS: carriage return (CR)
             return base + 21;
+        case '\n':  // WS: linefeed (LF)
+            return base + 22;
         default:
             // Illegal character (not in input alphabet)
             return -1;

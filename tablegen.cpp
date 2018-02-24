@@ -108,21 +108,23 @@ static int T(char ch)
         return base + 16;
     case ']':
         return base + 17;
-    case ' ':   // space
+    case '&':
         return base + 18;
-    case '\t':  // horizontal tab
+    case ' ':   // space
         return base + 19;
-    case '\r':  // carriage return (CR)
+    case '\t':  // horizontal tab
         return base + 20;
-    case '\n':  // linefeed (LF)
+    case '\r':  // carriage return (CR)
         return base + 21;
+    case '\n':  // linefeed (LF)
+        return base + 22;
     default:
         // Illegal character (not in input alphabet)
         return -1;
     }
 }
 
-static const int ALPHABET_SIZE = 84;
+static const int ALPHABET_SIZE = 85;
 
 int main(int argc, char* argv[])
 {
@@ -263,13 +265,13 @@ int main(int argc, char* argv[])
                         'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
 
                 int all_symbols[] = { '=', '<', '>', ':', '+', '-', '*', '/', '%', '.', '(', ')', ',', '{', '}', ';',
-                        '[', ']', };
+                        '[', ']', '&' };
 
                 int all_chars[] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
                         'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
                         'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1',
                         '2', '3', '4', '5', '6', '7', '8', '9', '=', '<', '>', ':', '+', '-', '*', '/', '%', '.', '(',
-                        ')', ',', '{', '}', ';', '[', ']', ' ', '\t', '\r', '\n' };
+                        ')', ',', '{', '}', ';', '[', ']', '&', ' ', '\t', '\r', '\n' };
 
                 for (auto&& action_char : action_order)
                 {
