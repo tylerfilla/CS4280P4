@@ -23,7 +23,7 @@
 
 #TK_EOF
 
-*                   i->i,l->l,p->p,r->r,s->s,t->t,v->v,WS->*,OTHERLETTERS->IDENTIFIER
+*                   i->i,l->l,p->p,r->r,s->s,t->t,v->v,WS->*,OTHERLETTERS->IDENTIFIER,=->EQUAL,<->LESSTHAN,>->GREATERTHAN,:->COLON,+->PLUS,MINUS->MINUS,*->ASTERISK,/->SLASH,%->PERCENT,.->DOT,(->OPAREN,)->CPAREN,COMMA->COMMA,{->OBRACE,}->CBRACE,;->SEMICOLON,[->OBRACKET,]->CBRACKET
  i                  f->if,t->it,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
   if                f->iff,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
    iff              WS->{TK_KW_IFF},OTHERLETTERS->IDENTIFIER
@@ -68,23 +68,23 @@
   vo                i->voi,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
    voi              d->void,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
     void            WS->{TK_KW_VOID},OTHERLETTERS->IDENTIFIER
- IDENTIFIER         LETTER->IDENTIFIER,DIGIT->IDENTIFIER,WS->{TK_IDENTIFIER}
- EQUAL              WS->{TK_OP_EQ}
- LESSTHAN           WS->{TK_OP_LT}
- GREATERTHAN        WS->{TK_OP_GT}
- COLON              WS->{TK_OP_COLON}
- PLUS               WS->{TK_OP_PLUS}
- MINUS              WS->{TK_OP_MINUS}
- ASTERISK           WS->{TK_OP_ASTERISK}
- SLASH              WS->{TK_OP_SLASH}
- PERCENT            WS->{TK_OP_PERCENT}
- DOT                WS->{TK_OP_DOT}
- OPAREN             WS->{TK_OP_OPAREN}
- CPAREN             WS->{TK_OP_CPAREN}
- COMMA              WS->{TK_OP_COMMA}
- OBRACE             WS->{TK_OP_OBRACE}
- CBRACE             WS->{TK_OP_CBRACE}
- SEMICOLON          WS->{TK_OP_SEMICOLON}
- OBRACKET           WS->{TK_OP_OBRACKET}
- CBRACKET           WS->{TK_OP_CBRACKET}
- INTEGER            DIGIT->INTEGER,WS->{TK_INTEGER}
+ IDENTIFIER         LETTERS->IDENTIFIER,DIGITS->IDENTIFIER,WS->{TK_IDENTIFIER},SYMBOLS->{TK_IDENTIFIER}
+ EQUAL              OTHERS->{TK_OP_EQ}
+ LESSTHAN           OTHERS->{TK_OP_LT}
+ GREATERTHAN        OTHERS->{TK_OP_GT}
+ COLON              OTHERS->{TK_OP_COLON}
+ PLUS               OTHERS->{TK_OP_PLUS}
+ MINUS              OTHERS->{TK_OP_MINUS}
+ ASTERISK           OTHERS->{TK_OP_ASTERISK}
+ SLASH              OTHERS->{TK_OP_SLASH}
+ PERCENT            OTHERS->{TK_OP_PERCENT}
+ DOT                OTHERS->{TK_OP_DOT}
+ OPAREN             OTHERS->{TK_OP_OPAREN}
+ CPAREN             OTHERS->{TK_OP_CPAREN}
+ COMMA              OTHERS->{TK_OP_COMMA}
+ OBRACE             OTHERS->{TK_OP_OBRACE}
+ CBRACE             OTHERS->{TK_OP_CBRACE}
+ SEMICOLON          OTHERS->{TK_OP_SEMICOLON}
+ OBRACKET           OTHERS->{TK_OP_OBRACKET}
+ CBRACKET           OTHERS->{TK_OP_CBRACKET}
+ INTEGER            DIGITS->INTEGER,WS->{TK_INTEGER}

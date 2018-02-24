@@ -49,8 +49,7 @@ public:
             // Get the next token
             auto tk = m_scanner.next_token();
 
-            // FIXME: Actually write gud code herr
-            std::cout << tk.type << "\n";
+            std::cout << "token: " << tk.type << "\n";
 
             // Stop at EOF
             if (tk.type == TK_EOF)
