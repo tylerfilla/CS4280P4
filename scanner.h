@@ -48,6 +48,26 @@ class scanner
     std::string m_running_content;
 
     /**
+     * The line on which the current token begins.
+     */
+    unsigned int m_token_line;
+
+    /**
+     * The column at which the current token begins.
+     */
+    unsigned int m_token_column;
+
+    /**
+     * The current line.
+     */
+    unsigned int m_current_line;
+
+    /**
+     * The current column.
+     */
+    unsigned int m_current_column;
+
+    /**
      * Translate an input character from ASCII to a local, more compact alphabet. This decouples the state machine from
      * ASCII, which reduces the size of the transition table, makes it easier to expand the alphabet in the future, and
      * provides a quick, initial validation of the input characters before they hit the state machine.
@@ -129,6 +149,11 @@ public:
             , m_iter_end(p_iter_end)
             , m_iter_current(p_iter_begin)
             , m_state(0)
+            , m_running_content {}
+            , m_token_line(1)
+            , m_token_column(1)
+            , m_current_line(1)
+            , m_current_column(1)
     {
     }
 
@@ -144,13 +169,25 @@ public:
      */
     token next_token()
     {
-        token tk {};
+        m_running_content.clear();
+        m_token_line = m_current_line;
+        m_token_column = m_current_column;
 
         // Continue from current position
         for (; m_iter_current != m_iter_end; ++m_iter_current)
         {
             // Get input character
             char c = *m_iter_current;
+
+            if (c == '\n')
+            {
+                m_current_line++;
+                m_current_column = 1;
+            }
+            else
+            {
+                m_current_column++;
+            }
 
             // Add character to running content
             m_running_content += c;
@@ -180,11 +217,30 @@ public:
 
             if ((action & SCANNER_TABLE_ACCEPT_MASK) != 0)
             {
-                m_state = 0;
-                tk.type = static_cast<p1::token_type>(action & ~SCANNER_TABLE_ACCEPT_MASK);
+                token tk {};
+
+                tk.type = static_cast<token_type>(action & ~SCANNER_TABLE_ACCEPT_MASK);
                 tk.content = m_running_content.substr(0, m_running_content.length() - 1);
+                tk.line_begin = m_token_line;
+                tk.line_end = m_current_line;
+                tk.column_begin = m_token_column;
+                tk.column_end = (m_current_column - 1 < 1) ? 1 : m_current_column - 1;
+
+                m_state = 0;
                 m_running_content.clear();
-                break;
+                m_token_line = m_current_line;
+                m_token_column = m_current_column;
+
+                if (c == '\n')
+                {
+                    m_current_line--;
+                }
+                else
+                {
+                    m_current_column--;
+                }
+
+                return tk;
             }
             else
             {
@@ -195,11 +251,13 @@ public:
                 if (m_state == 0)
                 {
                     m_running_content.clear();
+                    m_token_line = m_current_line;
+                    m_token_column = m_current_column;
                 }
             }
         }
 
-        return tk;
+        return {};
     }
 };
 

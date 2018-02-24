@@ -8,6 +8,8 @@
 #define P1_SCANNER_TESTER_H
 
 #include <iostream>
+#include <string>
+
 #include "token.h"
 
 namespace p1
@@ -122,6 +124,7 @@ public:
             // Get the next token
             auto tk = m_scanner.next_token();
 
+            // Print basic token info
             std::cout << token_name(tk.type);
             if (tk.content.empty())
             {
@@ -133,8 +136,13 @@ public:
             }
 
             // Stop at EOF
+            // This also avoids printing advanced info on the EOF token
             if (tk.type == TK_EOF)
                 break;
+
+            // Print advanced token info
+            std::cout << "  begin: line " << tk.line_begin << ", col " << tk.column_begin << "\n";
+            std::cout << "  end: line " << tk.line_end << ", col " << tk.column_end << "\n";
         }
     }
 };
