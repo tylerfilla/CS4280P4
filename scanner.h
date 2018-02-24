@@ -8,6 +8,7 @@
 #define P1_SCANNER_H
 
 #include <iostream>
+#include <string>
 
 #include "token.h"
 #include "scanner_table.gen.h"
@@ -40,6 +41,11 @@ class scanner
      * The current state of the scanner.
      */
     int m_state;
+
+    /**
+     * The in-progress content of the current token.
+     */
+    std::string m_running_content;
 
     /**
      * Translate an input character from ASCII to a local, more compact alphabet. This decouples the state machine from
@@ -146,6 +152,9 @@ public:
             // Get input character
             char c = *m_iter_current;
 
+            // Add character to running content
+            m_running_content += c;
+
             // Translate character to input alphabet
             // This is only useful for internal processing, not diagnostic messages
             int c_in = intake(c);
@@ -173,12 +182,20 @@ public:
             {
                 m_state = 0;
                 tk.type = static_cast<p1::token_type>(action & ~SCANNER_TABLE_ACCEPT_MASK);
+                tk.content = m_running_content.substr(0, m_running_content.length() - 1);
+                m_running_content.clear();
                 break;
             }
             else
             {
                 // Go to the new state
                 m_state = action;
+
+                // Clear running content when dropping to ground state
+                if (m_state == 0)
+                {
+                    m_running_content.clear();
+                }
             }
         }
 

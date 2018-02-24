@@ -122,7 +122,15 @@ public:
             // Get the next token
             auto tk = m_scanner.next_token();
 
-            std::cout << token_name(tk.type) << "\n";
+            std::cout << token_name(tk.type);
+            if (tk.content.empty())
+            {
+                std::cout << "\n";
+            }
+            else
+            {
+                std::cout << ": " << tk.content << "\n";
+            }
 
             // Stop at EOF
             if (tk.type == TK_EOF)

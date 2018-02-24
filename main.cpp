@@ -40,11 +40,11 @@ int main(int argc, char* argv[])
     std::istreambuf_iterator<char> input_begin(input);
     std::istreambuf_iterator<char> input_end {};
 
-    // Construct scanner object
-    p1::scanner<decltype(input_begin)> scanner(input_begin, input_end);
+    // Construct scanner object on input stream
+    p1::scanner<std::istreambuf_iterator<char>> scanner(input_begin, input_end);
 
     // Construct test harness on scanner
-    p1::scanner_tester<decltype(input_begin)> tester(scanner);
+    p1::scanner_tester<std::istreambuf_iterator<char>> tester(scanner);
 
     // Test the scanner
     tester.test_scanner();
