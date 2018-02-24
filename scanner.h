@@ -8,7 +8,9 @@
 #define P1_SCANNER_H
 
 #include <iostream>
+
 #include "token.h"
+#include "table.gen.h"
 
 namespace p1
 {
@@ -157,7 +159,7 @@ public:
             }
 
             // Look up the action for this character in the current state
-            int action = STATE_ACTIONS[c_in][m_state];
+            int action = 0;//STATE_ACTIONS[c_in][m_state];
 
             std::cout << "action for " << c << " in state " << m_state << " is " << action << "\n";
 

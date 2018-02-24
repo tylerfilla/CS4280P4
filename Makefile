@@ -13,7 +13,12 @@ all: scanner
 	g++ $(CXXFLAGS) -o $@ -c $^
 
 scanner: main.o
+	make tablegen
+	./tablegen
 	g++ -o $@ $^ $(LDFLAGS)
+
+tablegen: tablegen.o
+	g++ -o $@ $^
 
 .PHONY: clean
 clean:

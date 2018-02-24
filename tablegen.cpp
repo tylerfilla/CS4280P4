@@ -4,7 +4,6 @@
  * Project 1 - Table Generator
  */
 
-#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -425,6 +424,8 @@ int main(int argc, char* argv[])
     table_ss << "};\n\n";
 */
 
+    table_ss << "namespace p1\n";
+    table_ss << "{\n\n";
     table_ss << "#define ACCEPT(token) (token & (1 << 30))\n\n";
     table_ss << "static const int LEXER_TABLE[" << states_by_name.size() << "][" << ALPHABET_SIZE << "] = {\n";
 
@@ -489,6 +490,7 @@ int main(int argc, char* argv[])
 
     table_ss << "};\n\n";
     table_ss << "#undef ACCEPT\n\n";
+    table_ss << "} // namespace p1\n\n";
     table_ss << "#endif // #ifndef P1_TABLE_GEN_H\n\n";
 
     std::ofstream output_file("table.gen.h");

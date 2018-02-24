@@ -21,70 +21,70 @@
 # The first non-empty, non-comment line names the EOF token, which is always assigned the numeric ID 0.
 #
 
-#TOK_EOF
+#TK_EOF
 
 *                   i->i,l->l,p->p,r->r,s->s,t->t,v->v,WS->*,OTHERLETTERS->IDENTIFIER
  i                  f->if,t->it,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
   if                f->iff,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-   iff              WS->{TOK_IFF},OTHERLETTERS->IDENTIFIER
+   iff              WS->{TK_KW_IFF},OTHERLETTERS->IDENTIFIER
   it                e->ite,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
    ite              r->iter,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-    iter            WS->{TOK_ITER},OTHERLETTERS->IDENTIFIER
+    iter            WS->{TK_KW_ITER},OTHERLETTERS->IDENTIFIER
  l                  e->le,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
   le                t->let,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-   let              WS->{TOK_LET},OTHERLETTERS->IDENTIFIER
+   let              WS->{TK_KW_LET},OTHERLETTERS->IDENTIFIER
  p                  r->pr,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
   pr                i->pri,o->pro,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
    pri              n->prin,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
     prin            t->print,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-     print          WS->{TOK_PRINT},OTHERLETTERS->IDENTIFIER
+     print          WS->{TK_KW_PRINT},OTHERLETTERS->IDENTIFIER
    pro              g->prog,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
     prog            r->progr,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
      progr          a->progra,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
       progra        m->program,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-       program      WS->{TOK_PROGRAM},OTHERLETTERS->IDENTIFIER
+       program      WS->{TK_KW_PROGRAM},OTHERLETTERS->IDENTIFIER
  r                  e->re,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
   re                a->rea,t->ret,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
    rea              d->read,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-    read            WS->{TOK_READ},OTHERLETTERS->IDENTIFIER
+    read            WS->{TK_KW_READ},OTHERLETTERS->IDENTIFIER
    ret              u->retu,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
     retu            r->retur,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
      retur          n->return,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-      return        WS->{TOK_RETURN},OTHERLETTERS->IDENTIFIER
+      return        WS->{TK_KW_RETURN},OTHERLETTERS->IDENTIFIER
  s                  t->st,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
   st                a->sta,o->sto,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
    sta              r->star,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
     star            t->start,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-     start          WS->{TOK_START},OTHERLETTERS->IDENTIFIER
+     start          WS->{TK_KW_START},OTHERLETTERS->IDENTIFIER
    sto              p->stop,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-    stop            WS->{TOK_STOP},OTHERLETTERS->IDENTIFIER
+    stop            WS->{TK_KW_STOP},OTHERLETTERS->IDENTIFIER
  t                  h->th,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
   th                e->the,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
    the              n->then,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-    then            WS->{TOK_THEN},OTHERLETTERS->IDENTIFIER
+    then            WS->{TK_KW_THEN},OTHERLETTERS->IDENTIFIER
  v                  a->va,o->vo,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
   va                r->var,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-   var              WS->{TOK_VAR},OTHERLETTERS->IDENTIFIER
+   var              WS->{TK_KW_VAR},OTHERLETTERS->IDENTIFIER
   vo                i->voi,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
    voi              d->void,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-    void            WS->{TOK_VOID},OTHERLETTERS->IDENTIFIER
- IDENTIFIER         LETTER->IDENTIFIER,DIGIT->IDENTIFIER,WS->{TOK_IDENTIFIER}
- EQUAL              WS->{TOK_EQUAL}
- LESSTHAN           WS->{TOK_LESSTHAN}
- GREATERTHAN        WS->{TOK_GREATERTHAN}
- COLON              WS->{TOK_COLON}
- PLUS               WS->{TOK_PLUS}
- MINUS              WS->{TOK_MINUS}
- ASTERISK           WS->{TOK_ASTERISK}
- SLASH              WS->{TOK_SLASH}
- PERCENT            WS->{TOK_PERCENT}
- DOT                WS->{TOK_DOT}
- OPAREN             WS->{TOK_OPAREN}
- CPAREN             WS->{TOK_CPAREN}
- COMMA              WS->{TOK_COMMA}
- OBRACE             WS->{TOK_OBRACE}
- CBRACE             WS->{TOK_CBRACE}
- SEMICOLON          WS->{TOK_SEMICOLON}
- OBRACKET           WS->{TOK_OBRACKET}
- CBRACKET           WS->{TOK_CBRACKET}
- INTEGER            DIGIT->INTEGER,WS->{TOK_INTEGER}
+    void            WS->{TK_KW_VOID},OTHERLETTERS->IDENTIFIER
+ IDENTIFIER         LETTER->IDENTIFIER,DIGIT->IDENTIFIER,WS->{TK_IDENTIFIER}
+ EQUAL              WS->{TK_OP_EQ}
+ LESSTHAN           WS->{TK_OP_LT}
+ GREATERTHAN        WS->{TK_OP_GT}
+ COLON              WS->{TK_OP_COLON}
+ PLUS               WS->{TK_OP_PLUS}
+ MINUS              WS->{TK_OP_MINUS}
+ ASTERISK           WS->{TK_OP_ASTERISK}
+ SLASH              WS->{TK_OP_SLASH}
+ PERCENT            WS->{TK_OP_PERCENT}
+ DOT                WS->{TK_OP_DOT}
+ OPAREN             WS->{TK_OP_OPAREN}
+ CPAREN             WS->{TK_OP_CPAREN}
+ COMMA              WS->{TK_OP_COMMA}
+ OBRACE             WS->{TK_OP_OBRACE}
+ CBRACE             WS->{TK_OP_CBRACE}
+ SEMICOLON          WS->{TK_OP_SEMICOLON}
+ OBRACKET           WS->{TK_OP_OBRACKET}
+ CBRACKET           WS->{TK_OP_CBRACKET}
+ INTEGER            DIGIT->INTEGER,WS->{TK_INTEGER}
