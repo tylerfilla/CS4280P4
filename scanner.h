@@ -56,7 +56,7 @@ class scanner
     {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
     {0}, {0}, {0}, {0}, {0},
     /* ..... */
-    /* space */ { -1, -1, -1, 100, }
+    /* space */ { 0, -1, -1, 100, }
     };
 
     /**
@@ -214,6 +214,9 @@ public:
             {
                 std::cout << "YAY, ACCEPTED A TOKEN!\n";
                 m_state = 0;
+
+                tk.type = TK_KW_IFF; // FIXME
+                break;
             }
             else
             {
