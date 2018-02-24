@@ -27,6 +27,79 @@ class scanner_tester
      */
     scanner<InputIteratorT>& m_scanner;
 
+    std::string token_name(token_type tk)
+    {
+        switch (tk)
+        {
+        case TK_EOF:
+            return "EOF";
+        case TK_IDENTIFIER:
+            return "IDENTIFIER";
+        case TK_INTEGER:
+            return "INTEGER";
+        case TK_KW_IFF:
+            return "KW_IFF";
+        case TK_KW_ITER:
+            return "KW_ITER";
+        case TK_KW_LET:
+            return "KW_LET";
+        case TK_KW_PRINT:
+            return "KW_PRINT";
+        case TK_KW_PROGRAM:
+            return "KW_PROGRAM";
+        case TK_KW_READ:
+            return "KW_READ";
+        case TK_KW_RETURN:
+            return "KW_RETURN";
+        case TK_KW_START:
+            return "KW_START";
+        case TK_KW_STOP:
+            return "KW_STOP";
+        case TK_KW_THEN:
+            return "KW_THEN";
+        case TK_KW_VAR:
+            return "KW_VAR";
+        case TK_KW_VOID:
+            return "KW_VOID";
+        case TK_OP_EQ:
+            return "OP_EQ";
+        case TK_OP_LT:
+            return "OP_LT";
+        case TK_OP_GT:
+            return "OP_GT";
+        case TK_OP_COLON:
+            return "OP_COLON";
+        case TK_OP_PLUS:
+            return "OP_PLUS";
+        case TK_OP_MINUS:
+            return "OP_MINUS";
+        case TK_OP_ASTERISK:
+            return "OP_ASTERISK";
+        case TK_OP_SLASH:
+            return "OP_SLASH";
+        case TK_OP_PERCENT:
+            return "OP_PERCENT";
+        case TK_OP_DOT:
+            return "OP_DOT";
+        case TK_OP_OPAREN:
+            return "OP_OPAREN";
+        case TK_OP_CPAREN:
+            return "OP_CPAREN";
+        case TK_OP_COMMA:
+            return "OP_COMMA";
+        case TK_OP_OBRACE:
+            return "OP_OBRACE";
+        case TK_OP_CBRACE:
+            return "OP_CBRACE";
+        case TK_OP_SEMICOLON:
+            return "OP_SEMICOLON";
+        case TK_OP_OBRACKET:
+            return "OP_OBRACKET";
+        case TK_OP_CBRACKET:
+            return "OP_CBRACKET";
+        }
+    }
+
 public:
     scanner_tester(scanner<InputIteratorT>& p_scanner)
             : m_scanner(p_scanner)
@@ -49,7 +122,7 @@ public:
             // Get the next token
             auto tk = m_scanner.next_token();
 
-            std::cout << "token: " << tk.type << "\n";
+            std::cout << token_name(tk.type) << "\n";
 
             // Stop at EOF
             if (tk.type == TK_EOF)

@@ -22,7 +22,7 @@ tablegen: tablegen.o
 .PHONY: clean
 clean:
 	rm -rf *.o
-	rm scanner
-	rm tablegen
+	rm -f scanner
+	rm -f tablegen
 
 .SECONDARY:

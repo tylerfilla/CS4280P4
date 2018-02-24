@@ -161,8 +161,6 @@ public:
             // Look up the action for this character in the current state
             int action = SCANNER_TABLE[m_state][c_in];
 
-            std::cout << "action for " << c << " in state " << m_state << " is " << action << "\n";
-
             // If character is unexpected
             if (action == -1)
             {
@@ -173,7 +171,6 @@ public:
 
             if ((action & SCANNER_TABLE_ACCEPT_MASK) != 0)
             {
-                std::cout << "accepted token\n";
                 m_state = 0;
                 tk.type = static_cast<p1::token_type>(action & ~SCANNER_TABLE_ACCEPT_MASK);
                 break;
