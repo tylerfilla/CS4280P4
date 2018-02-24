@@ -4,6 +4,7 @@
  * Project 1 - Table Generator
  */
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -177,94 +178,63 @@ int main(int argc, char* argv[])
                 state->id = -1;
                 state->name = state_name;
 
+                std::set<int> used_chars;
+                int all_letters[] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+                        'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
+                        'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
+
                 for (auto&& action : state_actions)
                 {
                     std::string action_char = action.first;
                     std::string action_target = action.second;
 
-                    std::vector<int> chars;
+                    std::set<int> chars;
 
                     if (action_char == "WS")
                     {
-                        chars.push_back(' ');  // space
-                        chars.push_back('\t'); // h tab
-                        chars.push_back('\v'); // v tab
-                        chars.push_back('\f'); // formfeed
-                        chars.push_back('\n'); // linefeed
-                        chars.push_back('\r'); // carriage return
+                        chars.insert(' ');  // space
+                        chars.insert('\t'); // h tab
+                        chars.insert('\v'); // v tab
+                        chars.insert('\f'); // formfeed
+                        chars.insert('\n'); // linefeed
+                        chars.insert('\r'); // carriage return
                     }
                     else if (action_char == "LETTERS")
                     {
-                        chars.push_back('a');
-                        chars.push_back('b');
-                        chars.push_back('c');
-                        chars.push_back('d');
-                        chars.push_back('e');
-                        chars.push_back('f');
-                        chars.push_back('g');
-                        chars.push_back('h');
-                        chars.push_back('i');
-                        chars.push_back('j');
-                        chars.push_back('k');
-                        chars.push_back('l');
-                        chars.push_back('m');
-                        chars.push_back('n');
-                        chars.push_back('o');
-                        chars.push_back('p');
-                        chars.push_back('q');
-                        chars.push_back('r');
-                        chars.push_back('s');
-                        chars.push_back('t');
-                        chars.push_back('u');
-                        chars.push_back('v');
-                        chars.push_back('w');
-                        chars.push_back('x');
-                        chars.push_back('y');
-                        chars.push_back('z');
-                        chars.push_back('A');
-                        chars.push_back('B');
-                        chars.push_back('C');
-                        chars.push_back('D');
-                        chars.push_back('E');
-                        chars.push_back('F');
-                        chars.push_back('G');
-                        chars.push_back('H');
-                        chars.push_back('I');
-                        chars.push_back('J');
-                        chars.push_back('K');
-                        chars.push_back('L');
-                        chars.push_back('M');
-                        chars.push_back('N');
-                        chars.push_back('O');
-                        chars.push_back('P');
-                        chars.push_back('Q');
-                        chars.push_back('R');
-                        chars.push_back('S');
-                        chars.push_back('T');
-                        chars.push_back('U');
-                        chars.push_back('V');
-                        chars.push_back('W');
-                        chars.push_back('X');
-                        chars.push_back('Y');
-                        chars.push_back('Z');
+                        for (auto&& letter : all_letters)
+                        {
+                            chars.insert(letter);
+                        }
                     }
                     else if (action_char == "DIGITS")
                     {
-                        chars.push_back('0');
-                        chars.push_back('1');
-                        chars.push_back('2');
-                        chars.push_back('3');
-                        chars.push_back('4');
-                        chars.push_back('5');
-                        chars.push_back('6');
-                        chars.push_back('7');
-                        chars.push_back('8');
-                        chars.push_back('9');
+                        chars.insert('0');
+                        chars.insert('1');
+                        chars.insert('2');
+                        chars.insert('3');
+                        chars.insert('4');
+                        chars.insert('5');
+                        chars.insert('6');
+                        chars.insert('7');
+                        chars.insert('8');
+                        chars.insert('9');
+                    }
+                    else if (action_char == "OTHERLETTERS")
+                    {
+                        for (auto&& letter : all_letters)
+                        {
+                            if (used_chars.find(letter) == used_chars.end())
+                            {
+                                chars.insert(letter);
+                            }
+                        }
                     }
                     else
                     {
-                        chars.push_back(action_char[0]);
+                        chars.insert(action_char[0]);
                     }
+
+                    used_chars.insert(chars.begin(), chars.end());
 
                     if (action_target[0] == '{' && action_target[action_target.length() - 1] == '}')
                     {
