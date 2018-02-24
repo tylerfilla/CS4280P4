@@ -138,6 +138,8 @@ int main(int argc, char* argv[])
     std::map<std::string, tg::state*> states_by_name;
     std::map<std::string, tg::token*> tokens_by_code;
 
+    std::string eof_token_code;
+
     std::string line;
     for (auto&& ch : table_text)
     {
@@ -148,6 +150,13 @@ int main(int argc, char* argv[])
 
             if (line[0] != '#')
             {
+                if (eof_token_code.empty())
+                {
+                    eof_token_code = line;
+                    line.clear();
+                    continue;
+                }
+
                 bool in_state = false;
                 bool out_state = false;
                 bool in_filter = false;
@@ -413,6 +422,11 @@ int main(int argc, char* argv[])
         auto&& token = token_item.second;
         token->id = token_counter++;
     }
+
+    auto eof_token = new tg::token;
+    eof_token->id = 0;
+    eof_token->code = eof_token_code;
+    tokens_by_code.emplace(eof_token_code, eof_token);
 
     for (auto&& state_item : states_by_name)
     {

@@ -21,52 +21,52 @@
 # The first non-empty, non-comment line names the EOF token, which is always assigned the numeric ID 0.
 #
 
-#TK_EOF
+TK_EOF
 
 *                   i->i,l->l,p->p,r->r,s->s,t->t,v->v,WS->*,OTHERLETTERS->IDENTIFIER,DIGITS->INTEGER,=->EQUAL,<->LESSTHAN,>->GREATERTHAN,:->COLON,+->PLUS,MINUS->MINUS,*->ASTERISK,/->SLASH,%->PERCENT,.->DOT,(->OPAREN,)->CPAREN,COMMA->COMMA,{->OBRACE,}->CBRACE,;->SEMICOLON,[->OBRACKET,]->CBRACKET
- i                  f->if,t->it,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-  if                f->iff,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
+ i                  f->if,t->it,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+  if                f->iff,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
    iff              WS->{TK_KW_IFF},OTHERLETTERS->IDENTIFIER
-  it                e->ite,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-   ite              r->iter,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
+  it                e->ite,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+   ite              r->iter,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
     iter            WS->{TK_KW_ITER},OTHERLETTERS->IDENTIFIER
- l                  e->le,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-  le                t->let,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
+ l                  e->le,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+  le                t->let,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
    let              WS->{TK_KW_LET},OTHERLETTERS->IDENTIFIER
- p                  r->pr,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-  pr                i->pri,o->pro,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-   pri              n->prin,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-    prin            t->print,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
+ p                  r->pr,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+  pr                i->pri,o->pro,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+   pri              n->prin,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+    prin            t->print,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
      print          WS->{TK_KW_PRINT},OTHERLETTERS->IDENTIFIER
-   pro              g->prog,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-    prog            r->progr,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-     progr          a->progra,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-      progra        m->program,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
+   pro              g->prog,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+    prog            r->progr,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+     progr          a->progra,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+      progra        m->program,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
        program      WS->{TK_KW_PROGRAM},OTHERLETTERS->IDENTIFIER
- r                  e->re,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-  re                a->rea,t->ret,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-   rea              d->read,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
+ r                  e->re,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+  re                a->rea,t->ret,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+   rea              d->read,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
     read            WS->{TK_KW_READ},OTHERLETTERS->IDENTIFIER
-   ret              u->retu,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-    retu            r->retur,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-     retur          n->return,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
+   ret              u->retu,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+    retu            r->retur,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+     retur          n->return,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
       return        WS->{TK_KW_RETURN},OTHERLETTERS->IDENTIFIER
- s                  t->st,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-  st                a->sta,o->sto,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-   sta              r->star,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-    star            t->start,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
+ s                  t->st,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+  st                a->sta,o->sto,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+   sta              r->star,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+    star            t->start,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
      start          WS->{TK_KW_START},OTHERLETTERS->IDENTIFIER
-   sto              p->stop,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
+   sto              p->stop,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
     stop            WS->{TK_KW_STOP},OTHERLETTERS->IDENTIFIER
- t                  h->th,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-  th                e->the,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-   the              n->then,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
+ t                  h->th,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+  th                e->the,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+   the              n->then,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
     then            WS->{TK_KW_THEN},OTHERLETTERS->IDENTIFIER
- v                  a->va,o->vo,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-  va                r->var,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
+ v                  a->va,o->vo,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+  va                r->var,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
    var              WS->{TK_KW_VAR},OTHERLETTERS->IDENTIFIER
-  vo                i->voi,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
-   voi              d->void,WS->IDENTIFIER,OTHERLETTERS->IDENTIFIER
+  vo                i->voi,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
+   voi              d->void,WS->{TK_IDENTIFIER},OTHERLETTERS->IDENTIFIER
     void            WS->{TK_KW_VOID},OTHERLETTERS->IDENTIFIER
  IDENTIFIER         LETTERS->IDENTIFIER,DIGITS->IDENTIFIER,WS->{TK_IDENTIFIER},SYMBOLS->{TK_IDENTIFIER}
  EQUAL              OTHERS->{TK_OP_EQ}
@@ -87,4 +87,4 @@
  SEMICOLON          OTHERS->{TK_OP_SEMICOLON}
  OBRACKET           OTHERS->{TK_OP_OBRACKET}
  CBRACKET           OTHERS->{TK_OP_CBRACKET}
- INTEGER            DIGITS->INTEGER,WS->{TK_INTEGER}
+ INTEGER            DIGITS->INTEGER,WS->{TK_INTEGER},SYMBOLS->{TK_INTEGER}
