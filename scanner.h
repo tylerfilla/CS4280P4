@@ -131,18 +131,41 @@ class scanner
             return base + 17;
         case '&':
             return base + 18;
-        case ' ':   // WS: space
+        case ' ':
+            // Space
             return base + 19;
-        case '\t':  // WS: horizontal tab
+        case '\t':
+            // Horizontal tab
             return base + 20;
-        case '\r':  // WS: carriage return (CR)
+        case '\r':
+            // Carriage return (CR)
             return base + 21;
-        case '\n':  // WS: linefeed (LF)
+        case '\n':
+            // Linefeed (LF)
             return base + 22;
         default:
             // Illegal character (not in input alphabet)
             return -1;
         }
+    }
+
+    token accept_token(int action)
+    {
+        token tk {};
+
+        tk.type = static_cast<token_type>(action & ~SCANNER_TABLE_ACCEPT_MASK);
+        tk.content = m_running_content.substr(0, m_running_content.length() - 1);
+        tk.line_begin = m_token_line;
+        tk.line_end = m_current_line;
+        tk.column_begin = m_token_column;
+        tk.column_end = (m_current_column - 1 < 1) ? 1 : m_current_column - 1;
+
+        m_state = 0;
+        m_running_content.clear();
+        m_token_line = m_current_line;
+        m_token_column = m_current_column;
+
+        return tk;
     }
 
 public:
@@ -219,19 +242,7 @@ public:
 
             if ((action & SCANNER_TABLE_ACCEPT_MASK) != 0)
             {
-                token tk {};
-
-                tk.type = static_cast<token_type>(action & ~SCANNER_TABLE_ACCEPT_MASK);
-                tk.content = m_running_content.substr(0, m_running_content.length() - 1);
-                tk.line_begin = m_token_line;
-                tk.line_end = m_current_line;
-                tk.column_begin = m_token_column;
-                tk.column_end = (m_current_column - 1 < 1) ? 1 : m_current_column - 1;
-
-                m_state = 0;
-                m_running_content.clear();
-                m_token_line = m_current_line;
-                m_token_column = m_current_column;
+                auto tk = accept_token(action);
 
                 if (c == '\n')
                 {
@@ -257,6 +268,19 @@ public:
                     m_token_column = m_current_column;
                 }
             }
+        }
+
+        // If we're still not in the ground state after trying to read a token
+        // We must have encountered EOF at this point
+        if (m_state > 0)
+        {
+            // Get the action for a virtual trailing newline
+            // This is a hack to squeeze out the last token in a file
+            int action = SCANNER_TABLE[m_state][intake('\n')];
+
+            m_running_content += *m_iter_current;
+            m_current_column++;
+            return accept_token(action);
         }
 
         return {};
