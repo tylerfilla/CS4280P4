@@ -278,9 +278,25 @@ public:
             // This is a hack to squeeze out the last token in a file
             int action = SCANNER_TABLE[m_state][intake('\n')];
 
-            m_running_content += *m_iter_current;
-            m_current_column++;
-            return accept_token(action);
+            if (action == -1)
+            {
+                // TODO: Real diagnostics
+                std::cerr << "internal scanner error: cannot close state with virtual linefeed\n";
+                return {};
+            }
+
+            if ((action & SCANNER_TABLE_ACCEPT_MASK) != 0)
+            {
+                m_running_content += *m_iter_current;
+                m_current_column++;
+                return accept_token(action);
+            }
+            else
+            {
+                // TODO: Diag
+                std::cerr << "premature end-of-file\n";
+                return {};
+            }
         }
 
         return {};
