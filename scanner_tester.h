@@ -121,8 +121,17 @@ public:
     {
         while (true)
         {
-            // Get the next token
-            auto tk = m_scanner.next_token();
+            // Try to get the next token
+            p1::token tk;
+            try
+            {
+                tk = m_scanner.next_token();
+            }
+            catch (const p1::scanner_error& error)
+            {
+                std::cerr << error.really_what() << "\n";
+                break;
+            }
 
             // Print basic token info
             std::cout << token_name(tk.type);

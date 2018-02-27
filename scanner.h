@@ -7,7 +7,7 @@
 #ifndef P1_SCANNER_H
 #define P1_SCANNER_H
 
-#include <iostream>
+#include <stdexcept>
 #include <string>
 
 #include "token.h"
@@ -15,6 +15,105 @@
 
 namespace p1
 {
+
+/**
+ * An error thrown by a scanner.
+ */
+class scanner_error : public std::exception
+{
+    unsigned int m_line;
+    unsigned int m_column;
+
+protected:
+    scanner_error() : scanner_error(0, 0)
+    {
+    }
+
+    scanner_error(unsigned int p_line, unsigned int p_column)
+            : std::exception()
+            , m_line(p_line)
+            , m_column(p_column)
+    {
+    }
+
+public:
+    unsigned int get_line() const
+    { return m_line; }
+
+    unsigned int get_column() const
+    { return m_column; }
+
+    const char* what() const noexcept override
+    { return "a scanner error has occurred"; }
+
+    virtual std::string really_what() const
+    { return what(); }
+};
+
+/**
+ * An error thrown by a scanner when it encounters an illegal character.
+ */
+class scanner_illegal_char_error : public scanner_error
+{
+    char m_char;
+
+public:
+    scanner_illegal_char_error(unsigned int p_line, unsigned int p_column, char p_char)
+            : scanner_error(p_line, p_column)
+            , m_char(p_char)
+    {
+    }
+
+    char get_char() const
+    { return m_char; }
+
+    const char* what() const noexcept final
+    { return "illegal character"; }
+
+    std::string really_what() const
+    { return std::string("illegal character: ") + m_char; }
+};
+
+/**
+ * An error thrown by a scanner when it encounters an unexpected character.
+ */
+class scanner_unexpected_char_error : public scanner_error
+{
+    char m_char;
+
+public:
+    scanner_unexpected_char_error(unsigned int p_line, unsigned int p_column, char p_char)
+            : scanner_error(p_line, p_column)
+            , m_char(p_char)
+    {
+    }
+
+    char get_char() const
+    { return m_char; }
+
+    const char* what() const noexcept final
+    { return "unexpected character"; }
+
+    std::string really_what() const
+    { return std::string("unexpected character: ") + m_char; }
+};
+
+/**
+ * An error thrown by a scanner when it encounters an EOF in a non-ground state.
+ */
+class scanner_premature_eof_error : public scanner_error
+{
+public:
+    const char* what() const noexcept final
+    { return "premature eof"; }
+};
+
+class scanner_virtual_close_error : public scanner_error
+{
+public:
+    const char* what() const noexcept final
+    { return "unable to close state with virtual newline"; }
+};
 
 /**
  * The scanner object.
@@ -221,24 +320,16 @@ public:
             // This is only useful for internal processing, not diagnostic messages
             int c_in = intake(c);
 
-            // If character is illegal
+            // If character is illegal, throw
             if (c_in == -1)
-            {
-                // TODO: Add real diagnostic reporting with "Scanner Error: " prefix as instructed
-                std::cerr << "illegal character: " << c << "\n";
-                return {};
-            }
+                throw scanner_illegal_char_error(m_current_line, m_current_column, c);
 
             // Look up the action for this character in the current state
             int action = SCANNER_TABLE[m_state][c_in];
 
-            // If character is unexpected
+            // If character is unexpected, throw
             if (action == -1)
-            {
-                // TODO: Diagnostic message
-                std::cerr << "unexpected character: " << c << "\n";
-                return {};
-            }
+                throw scanner_unexpected_char_error(m_current_line, m_current_column, c);
 
             if ((action & SCANNER_TABLE_ACCEPT_MASK) != 0)
             {
@@ -280,9 +371,7 @@ public:
 
             if (action == -1)
             {
-                // TODO: Real diagnostics
-                std::cerr << "internal scanner error: cannot close state with virtual linefeed\n";
-                return {};
+                throw scanner_virtual_close_error();
             }
 
             if ((action & SCANNER_TABLE_ACCEPT_MASK) != 0)
@@ -293,9 +382,7 @@ public:
             }
             else
             {
-                // TODO: Diag
-                std::cerr << "premature end-of-file\n";
-                return {};
+                throw scanner_premature_eof_error();
             }
         }
 
