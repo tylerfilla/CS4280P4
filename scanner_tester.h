@@ -129,7 +129,7 @@ public:
             }
             catch (const p1::scanner_error& error)
             {
-                std::cerr << error.really_what() << "\n";
+                std::cerr << "scanner error: " << error.really_what() << "\n";
                 break;
             }
 
