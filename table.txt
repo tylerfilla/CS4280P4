@@ -4,23 +4,6 @@
 # Project 1
 #
 
-#
-# What is this file?
-#
-# I found the most frustrating part of hand-coding the table to be assigning numbers to states. Any mistake requires
-# going back to fix many cells in the table, which seems error-prone. To solve this, I started planning out the table
-# in this file. Eventually, I decided to write a program to convert this file into the table, itself, automatically,
-# using an easier-to-code method.
-#
-# The main feature of this file is the ability to refer to states by name, rather than number. Each non-empty, non-
-# comment line describes one state. The first field on the line contains a human-readable name for the state. The
-# second field is a comma-separated list of transitions (in the form of "CHARACTER->TARGET"). The ground state is named
-# "*" (asterisk, not a wildcard). CHARACTER is allowed to be "WS" for all whitespace, "LETTERS" for letters (uppercase
-# and lowercase), or "DIGITS" for digits. If TARGET is in {braces}, that denotes an accepted token.
-#
-# The first non-empty, non-comment line names the EOF token, which is always assigned the numeric ID 0.
-#
-
 TK_EOF
 
 *                   i->i,l->l,p->p,r->r,s->s,t->t,v->v,WS->*,OTHERLETTERS->IDENTIFIER,DIGITS->INTEGER,=->EQUAL,<->LESSTHAN,>->GREATERTHAN,:->COLON,+->PLUS,MINUS->MINUS,*->ASTERISK,/->SLASH,%->PERCENT,.->DOT,(->OPAREN,)->CPAREN,COMMA->COMMA,{->OBRACE,}->CBRACE,;->SEMICOLON,[->OBRACKET,]->CBRACKET,&->COMMENT
