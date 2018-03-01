@@ -128,7 +128,13 @@ static const int ALPHABET_SIZE = 85;
 
 int main(int argc, char* argv[])
 {
-    std::ifstream table_file("table.txt");
+    if (argc != 3)
+    {
+        std::cerr << "arguments invalid\n";
+        return 1;
+    }
+
+    std::ifstream table_file(argv[1]);
 
     std::string table_text;
     {
@@ -555,7 +561,7 @@ int main(int argc, char* argv[])
     table_ss << "} // namespace p1\n\n";
     table_ss << "#endif // #ifndef P1_SCANNER_TABLE_GEN_H\n\n";
 
-    std::ofstream output_file("scanner_table.gen.h");
+    std::ofstream output_file(argv[2]);
     output_file << table_ss.rdbuf();
 
     return 0;

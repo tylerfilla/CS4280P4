@@ -17,7 +17,7 @@ scanner: main.o
 
 tablegen: tablegen.o
 	g++ -o $@ $^
-	./tablegen
+	./tablegen table.txt scanner_table.gen.h
 
 .PHONY: clean
 clean:
