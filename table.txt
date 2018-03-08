@@ -1,7 +1,7 @@
 #
 # Tyler Filla
 # CS 4280
-# Project 1
+# Project 2
 #
 
 TK_EOF

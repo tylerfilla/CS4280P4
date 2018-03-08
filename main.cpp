@@ -1,7 +1,7 @@
 /*
  * Tyler Filla
  * CS 4280
- * Project 1
+ * Project 2
  */
 
 #include <fstream>
@@ -9,8 +9,8 @@
 #include <iterator>
 #include <string>
 
+#include "parser.h"
 #include "scanner.h"
-#include "scanner_tester.h"
 
 int main(int argc, char* argv[])
 {
@@ -41,13 +41,21 @@ int main(int argc, char* argv[])
     std::istreambuf_iterator<char> input_end {};
 
     // Construct scanner object on input stream
-    p1::scanner<std::istreambuf_iterator<char>> scanner(input_begin, input_end);
+    p2::scanner<decltype(input_begin)> scanner(input_begin, input_end);
 
-    // Construct test harness on scanner
-    p1::scanner_tester<std::istreambuf_iterator<char>> tester(scanner);
+    //for (auto&& token : scanner)
+    //{
+    //    std::cout << token.content << "\n";
+    //}
 
-    // Test the scanner
-    tester.test_scanner();
+    // Construct token iterators on scanner
+    //p2::token_iterator token_begin(scanner);
+    //p2::token_iterator token_end {};
+
+    // Construct parser object on scanned token stream
+    p2::parser<decltype(input_begin)> parser(scanner.begin(), scanner.end());
+
+    parser.parse(); // FIXME
 
     return 0;
 }

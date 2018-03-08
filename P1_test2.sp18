@@ -1,5 +1,0 @@
-start stop iter void var return read print program iff then let
-start1 stop1 iter1 void1 var1 return1 read1 print1 program1 iff1 then1 let1
-=  <  >  :   +  -  *  /   %  . (  ) , { } ; [ ]
-x=x<x>x:x+x-x*x/x%x.x(x)x,x{x}x;x[x]
-1 12 23
