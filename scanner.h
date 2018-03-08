@@ -1,11 +1,11 @@
 /*
  * Tyler Filla
  * CS 4280
- * Project 1
+ * Project 2
  */
 
-#ifndef P1_SCANNER_H
-#define P1_SCANNER_H
+#ifndef P2_SCANNER_H
+#define P2_SCANNER_H
 
 #include <stdexcept>
 #include <string>
@@ -13,7 +13,7 @@
 #include "token.h"
 #include "scanner_table.gen.h"
 
-namespace p1
+namespace p2
 {
 
 /**
@@ -121,6 +121,13 @@ public:
 template<typename InputIteratorT>
 class scanner
 {
+public:
+    /**
+     * An iterator over tokens scanned from the source.
+     */
+    class token_iterator;
+
+private:
     /**
      * An iterator to the current position in the input.
      */
@@ -382,8 +389,88 @@ public:
 
         return {};
     }
+
+public:
+    token_iterator begin()
+    { return token_iterator(this); }
+
+    token_iterator end()
+    { return token_iterator {}; }
 };
 
-} // namespace p1
+template<typename InputIteratorT>
+class scanner<InputIteratorT>::token_iterator
+{
+    /**
+     * The connected scanner.
+     */
+    scanner* m_scanner;
 
-#endif // #ifndef P1_SCANNER_H
+    /**
+     * Whether the iterator represents EOF.
+     */
+    bool m_eof;
+
+    /**
+     * The last token scanned.
+     */
+    token m_scanned_token;
+
+public:
+    token_iterator()
+            : m_scanner(nullptr)
+            , m_eof(true)
+    {
+    }
+
+    token_iterator(scanner* p_scanner)
+            : m_scanner(p_scanner)
+            , m_eof(false)
+    {
+        // Load first token
+        ++*this;
+    }
+
+    ~token_iterator() = default;
+
+    token operator*()
+    { return m_scanned_token; }
+
+    token_iterator operator++()
+    {
+        (*this)++;
+        return *this;
+    }
+
+    token_iterator operator++(int)
+    {
+        token_iterator copy(*this);
+
+        // Get the next token from the scanner
+        m_scanned_token = m_scanner->next_token();
+
+        // Handle EOF case
+        if (m_scanned_token.type == TK_EOF)
+        {
+            m_eof = true;
+        }
+
+        return copy;
+    }
+
+    bool operator==(const token_iterator& rhs) const
+    {
+        // All EOF-representing iterators are equivalent
+        if (m_eof && rhs.m_eof)
+            return true;
+
+        return false;
+    }
+
+    bool operator!=(const token_iterator& rhs) const
+    { return !(*this == rhs); }
+};
+
+} // namespace p2
+
+#endif // #ifndef P2_SCANNER_H

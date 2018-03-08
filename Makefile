@@ -1,18 +1,19 @@
 #
 # Tyler Filla
-# CS 4280 - P1
+# CS 4280
+# Project 2
 #
 
 LDFLAGS=
-CXXFLAGS=-std=c++11
+CXXFLAGS=-std=c++11 -g
 
 .PHONY: all
-all: tablegen scanner
+all: tablegen frontEnd
 
 %.o: %.cpp
 	g++ $(CXXFLAGS) -o $@ -c $^
 
-scanner: main.o
+frontEnd: main.o
 	g++ -o $@ $^ $(LDFLAGS)
 
 tablegen: tablegen.o
@@ -22,7 +23,7 @@ tablegen: tablegen.o
 .PHONY: clean
 clean:
 	rm -rf *.o
-	rm -f scanner
+	rm -f frontEnd
 	rm -f tablegen
 
 .SECONDARY:
