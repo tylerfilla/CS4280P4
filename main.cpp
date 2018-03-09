@@ -35,27 +35,16 @@ int main(int argc, char* argv[])
         }
     }
 
-    // Construct character iterators on the input stream
+    // Prepare scanner and parser on input stream
     auto& input = *input_ptr;
-    std::istreambuf_iterator<char> input_begin(input);
-    std::istreambuf_iterator<char> input_end {};
+    using input_iterator = typename std::istreambuf_iterator<char>;
+    p2::scanner<input_iterator> scanner(input_iterator(input), input_iterator {});
+    p2::parser<input_iterator> parser(scanner.scan_begin(), scanner.scan_end());
 
-    // Construct scanner object on input stream
-    p2::scanner<decltype(input_begin)> scanner(input_begin, input_end);
+    // Parse the input
+    auto tree = parser.parse();
 
-    //for (auto&& token : scanner)
-    //{
-    //    std::cout << token.content << "\n";
-    //}
-
-    // Construct token iterators on scanner
-    //p2::token_iterator token_begin(scanner);
-    //p2::token_iterator token_end {};
-
-    // Construct parser object on scanned token stream
-    p2::parser<decltype(input_begin)> parser(scanner.begin(), scanner.end());
-
-    parser.parse(); // FIXME
+    // TODO: Work with the parse tree
 
     return 0;
 }

@@ -19,31 +19,25 @@ class parser
     using token_iterator = typename p2::scanner<InputIteratorT>::token_iterator;
 
     /**
-     * A begin iterator over the input tokens.
-     */
-    token_iterator m_token_begin;
-
-    /**
-     * An end iterator over the input tokens.
-     */
-    token_iterator m_token_end;
-
-    /**
-     * An iterator to the current token.
+     * An iterator to the current location in the input token stream.
      */
     token_iterator m_token_current;
 
+    /**
+     * An iterator to the end of the input token stream.
+     */
+    token_iterator m_token_end;
+
 public:
-    parser(token_iterator p_token_begin, token_iterator p_token_end)
-            : m_token_begin(p_token_begin)
+    parser(token_iterator p_token_current, token_iterator p_token_end)
+            : m_token_current(p_token_current)
             , m_token_end(p_token_end)
-            , m_token_current(p_token_begin)
     {
     }
 
     ~parser() = default;
 
-    void parse()
+    int parse() // FIXME: Return tree
     {
         for (; m_token_current != m_token_end; m_token_current++)
         {
