@@ -122,19 +122,14 @@ template<typename InputIteratorT>
 class scanner
 {
     /**
-     * An iterator to the beginning of the input.
+     * An iterator to the current position in the input.
      */
-    InputIteratorT m_iter_begin;
+    InputIteratorT m_iter_current;
 
     /**
      * An iterator to the end of the input.
      */
     InputIteratorT m_iter_end;
-
-    /**
-     * An iterator to the current position in the input.
-     */
-    InputIteratorT m_iter_current;
 
     /**
      * The current state of the scanner.
@@ -268,10 +263,9 @@ class scanner
     }
 
 public:
-    scanner(InputIteratorT p_iter_begin, InputIteratorT p_iter_end)
-            : m_iter_begin(p_iter_begin)
+    scanner(InputIteratorT p_iter_current, InputIteratorT p_iter_end)
+            : m_iter_current(p_iter_current)
             , m_iter_end(p_iter_end)
-            , m_iter_current(p_iter_begin)
             , m_state(0)
             , m_running_content {}
             , m_token_line(1)
