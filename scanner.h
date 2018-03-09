@@ -391,10 +391,16 @@ public:
     }
 
 public:
-    token_iterator begin()
+    /**
+     * @returns An iterator to the beginning of the token stream.
+     */
+    token_iterator scan_begin()
     { return token_iterator(this); }
 
-    token_iterator end()
+    /**
+     * @returns An iterator to the end of the token stream.
+     */
+    token_iterator scan_end()
     { return token_iterator {}; }
 };
 
