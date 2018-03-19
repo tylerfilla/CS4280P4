@@ -1,7 +1,40 @@
 #
 # Tyler Filla
 # CS 4280
-# Project 1
+# Project 1 - Table Description
+#
+# This is a small file that lets me modify the scanner table with English,
+# rather than numbers. Writing this file and a parser for this file was a good
+# investment of my time, as it allowed very rapid fixes for silly mistakes.
+#
+# In short, these are the rules:
+#  - All lines are LF-terminated
+#  - Comment lines start with #
+#  - Empty lines are ignored
+#  - The first useful line names the EOF token (*)
+#  - All useful lines that follow define states (one state per line)
+#  - The ground state is called '*' by convention (it's not a wildcard)
+#  - On state lines, the first non-whitespace field is the state's name
+#  - After each state's name, a comma-separated series of actions follows
+#  - An action can be a transition or an acceptance
+#  - Each transition is of the form CHARACTER_GROUP->DESTINATION_STATE
+#  - Each acceptance is of the form CHARACTER_GROUP->{ACCEPTED_TOKEN_CODE}
+#  - When a token is accepted, an implicit transition to state '*' happens
+#
+# The following character groups are supported:
+#  - All characters allowed in P1 except for '-' and ',' for escaping reasons
+#  - MINUS: the escaped character '-'
+#  - COMMA: the escaped character ','
+#  - DIGITS: all allowed digits
+#  - LETTERS: all allowed letters, both uppercase and lowercase
+#  - WS: all allowed whitespace
+#  - SYMBOLS: all allowed symbols not explicitly assigned beforehand
+#  - OTHERLETTERS: all letters not explicitly assigned beforehand
+#  - OTHERS: all characters not explicitly assigned beforehand
+#
+# * Since EOF can happen anywhere, I simplified the file a bit by factoring out
+# the corresponding token. That's why it needs to be named somewhere, and I
+# merely chose "before the states" as a matter of design.
 #
 
 TK_EOF
