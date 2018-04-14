@@ -37,6 +37,57 @@ class parser_unexpected_token_error : public parser_error
 {
     token m_unexpected_token;
 
+    /**
+     * Generate diagnostic text for the given token.
+     *
+     * @param The token in question
+     * @return The diagnostic text
+     */
+    static std::string diag(token tk)
+    {
+        switch (tk.type)
+        {
+        case TK_EOF:
+            return "eof";
+        case TK_IDENTIFIER:
+            return std::string("identifier \"") + tk.content + std::string("\"");
+        case TK_INTEGER:
+            return std::string("integer \"") + tk.content + std::string("\"");
+        case TK_KW_IFF:
+        case TK_KW_ITER:
+        case TK_KW_LET:
+        case TK_KW_PRINT:
+        case TK_KW_PROGRAM:
+        case TK_KW_READ:
+        case TK_KW_RETURN:
+        case TK_KW_START:
+        case TK_KW_STOP:
+        case TK_KW_THEN:
+        case TK_KW_VAR:
+        case TK_KW_VOID:
+            return std::string("keyword ") + tk.content;
+        case TK_OP_EQ:
+        case TK_OP_LT:
+        case TK_OP_GT:
+        case TK_OP_COLON:
+        case TK_OP_PLUS:
+        case TK_OP_MINUS:
+        case TK_OP_ASTERISK:
+        case TK_OP_SLASH:
+        case TK_OP_PERCENT:
+        case TK_OP_DOT:
+        case TK_OP_OPAREN:
+        case TK_OP_CPAREN:
+        case TK_OP_COMMA:
+        case TK_OP_OBRACE:
+        case TK_OP_CBRACE:
+        case TK_OP_SEMICOLON:
+        case TK_OP_OBRACKET:
+        case TK_OP_CBRACKET:
+            return std::string("operator ") + tk.content;
+        }
+    }
+
 public:
     parser_unexpected_token_error(token p_unexpected_token) : m_unexpected_token(p_unexpected_token)
     {
@@ -49,6 +100,12 @@ public:
 
     void set_unexpected_token(token p_unexpected_token)
     { m_unexpected_token = p_unexpected_token; }
+
+    const char* what() const noexcept override
+    { return "unexpected token\n"; }
+
+    virtual std::string really_what() const
+    { return std::string("unexpected token: ") + diag(m_unexpected_token); }
 };
 
 /**
