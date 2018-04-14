@@ -41,10 +41,23 @@ int main(int argc, char* argv[])
     p2::scanner<input_iterator> scanner(input_iterator(input), input_iterator {});
     p2::parser<input_iterator> parser(scanner.scan_begin(), scanner.scan_end());
 
-    // Parse the input
-    auto tree = parser.parse();
+    // Try to parse the input
+    try
+    {
+        parser.parse();
+    }
+    catch (p2::scanner_error& e)
+    {
+        std::cerr << "an error has occurred while scanning the input\n";
+        std::cerr << "error: " << e.really_what() << "\n";
+    }
+    catch (p2::parser_error& e)
+    {
+        std::cerr << "an error has occurred while parsing the input\n";
+        std::cerr << "error: " << e.really_what() << "\n";
+    }
 
-    // TODO: Work with the parse tree
+    // TODO: Get the tree and print it out
 
     return 0;
 }

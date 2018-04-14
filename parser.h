@@ -7,6 +7,9 @@
 #ifndef P2_PARSER_H
 #define P2_PARSER_H
 
+#include <stdexcept>
+#include <string>
+
 #include "scanner.h"
 
 namespace p2
@@ -19,6 +22,12 @@ class parser_error : std::exception
 {
 public:
     virtual ~parser_error() = default;
+
+    const char* what() const noexcept override
+    { return "a parser error has occurred\n"; }
+
+    virtual std::string really_what() const
+    { return what(); }
 };
 
 /**
@@ -603,23 +612,23 @@ public:
 
     ~parser() = default;
 
-    int parse() // FIXME: Return tree
+    /**
+     * Parse from the configured source token stream.
+     */
+    void parse()
     {
         parse_program();
-        ++m_token_current;
-
-        if (m_token_current->type != TK_EOF)
+        switch (m_token_current->type)
+        {
+        case TK_EOF:
+            ++m_token_current;
+            // success
+            return;
+        default:
             throw parser_unexpected_token_error(*m_token_current);
-
-        return 0;
+        }
     }
 };
-
-std::ostream& operator<<(std::ostream& stream, const token& rhs)
-{
-    stream << rhs.content;
-    return stream;
-}
 
 } // namespace p2
 
