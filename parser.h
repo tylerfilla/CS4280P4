@@ -7,7 +7,6 @@
 #ifndef P2_PARSER_H
 #define P2_PARSER_H
 
-#include <iostream> // FIXME: Remember to remove this
 #include "scanner.h"
 
 namespace p2
@@ -73,7 +72,6 @@ class parser
             parse_vars();
             parse_block();
             // success
-            std::cout << "parsed program\n";
             return;
         default:
             throw parser_unexpected_token_error(*m_token_current);
@@ -96,7 +94,6 @@ class parser
             case TK_KW_STOP:
                 ++m_token_current;
                 // success
-                std::cout << "parsed block\n";
                 return;
             default:
                 throw parser_unexpected_token_error(*m_token_current);
@@ -141,7 +138,6 @@ class parser
             }
         default:
             // epsilon
-            std::cout << "epsilon on vars\n";
             return;
         }
     }
@@ -156,7 +152,6 @@ class parser
         case TK_OP_DOT:
             ++m_token_current;
             // success
-            std::cout << "parsed mvars dot\n";
             return;
         case TK_OP_COLON:
             ++m_token_current;
@@ -166,7 +161,6 @@ class parser
                 ++m_token_current;
                 parse_mvars();
                 // success
-                std::cout << "parsed mvars colon\n";
                 return;
             default:
                 throw parser_unexpected_token_error(*m_token_current);
@@ -184,7 +178,6 @@ class parser
         parse_M();
         parse_expr_2();
         // success
-        std::cout << "parsed expr\n";
         return;
     }
 
@@ -199,29 +192,24 @@ class parser
             ++m_token_current;
             parse_expr();
             // success
-            std::cout << "parsed expr_2 plus\n";
             return;
         case TK_OP_MINUS:
             ++m_token_current;
             parse_expr();
             // success
-            std::cout << "parsed expr_2 minus\n";
             return;
         case TK_OP_SLASH:
             ++m_token_current;
             parse_expr();
             // success
-            std::cout << "parsed expr_2 slash\n";
             return;
         case TK_OP_ASTERISK:
             ++m_token_current;
             parse_expr();
             // success
-            std::cout << "parsed expr_2 asterisk\n";
             return;
         default:
             // epsilon
-            std::cout << "epsilon on expr_2\n";
             return;
         }
     }
@@ -237,7 +225,6 @@ class parser
             ++m_token_current;
             parse_M();
             // success
-            std::cout << "parsed M percent\n";
             return;
         // FIRST(R)
         case TK_OP_OPAREN:
@@ -246,7 +233,6 @@ class parser
             // unparsed nonterminal: do not consume token
             parse_R();
             // success
-            std::cout << "parsed M R\n";
             return;
         default:
             throw parser_unexpected_token_error(*m_token_current);
@@ -268,7 +254,6 @@ class parser
             case TK_OP_CPAREN:
                 ++m_token_current;
                 // success
-                std::cout << "parsed R oparen\n";
                 return;
             default:
                 throw parser_unexpected_token_error(*m_token_current);
@@ -276,12 +261,10 @@ class parser
         case TK_IDENTIFIER:
             ++m_token_current;
             // success
-            std::cout << "parsed R identifier\n";
             return;
         case TK_INTEGER:
             ++m_token_current;
             // success
-            std::cout << "parsed R integer\n";
             return;
         default:
             throw parser_unexpected_token_error(*m_token_current);
@@ -297,7 +280,7 @@ class parser
         parse_stat();
         parse_mStat();
         // success
-        std::cout << "parsed stats\n";
+        return;
     }
 
     /**
@@ -310,6 +293,7 @@ class parser
         // FIRST(stat)
         case TK_KW_READ:
         case TK_KW_PRINT:
+        case TK_KW_START:
         case TK_KW_IFF:
         case TK_KW_ITER:
         case TK_KW_LET:
@@ -317,11 +301,9 @@ class parser
             parse_stat();
             parse_mStat();
             // success
-            std::cout << "parsed mStat stat\n";
             return;
         default:
             // epsilon
-            std::cout << "epsilon on mStat\n";
             return;
         }
     }
@@ -338,42 +320,36 @@ class parser
             // unparsed nonterminal: do not consume token
             parse_in();
             // success
-            std::cout << "parsed stat in\n";
             return;
         // FIRST(out)
         case TK_KW_PRINT:
             // unparsed nonterminal: do not consume token
             parse_out();
             // success
-            std::cout << "parsed stat out\n";
             return;
         // FIRST(block)
         case TK_KW_START:
             // unparsed nonterminal: do not consume token
             parse_block();
             // success
-            std::cout << "parsed stat block\n";
             return;
         // FIRST(if)
         case TK_KW_IFF:
             // unparsed nonterminal: do not consume token
             parse_if();
             // success
-            std::cout << "parsed stat if\n";
             return;
         // FIRST(loop)
         case TK_KW_ITER:
             // unparsed nonterminal: do not consume token
             parse_loop();
             // success
-            std::cout << "parsed stat loop\n";
             return;
         // FIRST(assign)
         case TK_KW_LET:
             // unparsed nonterminal: do not consume token
             parse_assign();
             // success
-            std::cout << "parsed stat assign\n";
             return;
         default:
             throw parser_unexpected_token_error(*m_token_current);
@@ -398,7 +374,6 @@ class parser
                 case TK_OP_DOT:
                     ++m_token_current;
                     // success
-                    std::cout << "parsed in\n";
                     return;
                 default:
                     throw parser_unexpected_token_error(*m_token_current);
@@ -426,7 +401,6 @@ class parser
             case TK_OP_DOT:
                 ++m_token_current;
                 // success
-                std::cout << "parsed out\n";
                 return;
             default:
                 throw parser_unexpected_token_error(*m_token_current);
@@ -458,7 +432,6 @@ class parser
                     ++m_token_current;
                     parse_stat();
                     // success
-                    std::cout << "parsed if\n";
                     return;
                 default:
                     throw parser_unexpected_token_error(*m_token_current);
@@ -493,7 +466,6 @@ class parser
                     ++m_token_current;
                     parse_stat();
                     // success
-                    std::cout << "parsed loop\n";
                     return;
                 default:
                     throw parser_unexpected_token_error(*m_token_current);
@@ -529,7 +501,6 @@ class parser
                     case TK_OP_DOT:
                         ++m_token_current;
                         // success
-                        std::cout << "parsed assign\n";
                         return;
                     default:
                         throw parser_unexpected_token_error(*m_token_current);
@@ -556,19 +527,16 @@ class parser
             ++m_token_current;
             parse_RO_lt();
             // success
-            std::cout << "parsed RO lt\n";
             return;
         case TK_OP_GT:
             ++m_token_current;
             parse_RO_gt();
             // success
-            std::cout << "parsed RO gt\n";
             return;
         case TK_OP_EQ:
             ++m_token_current;
             parse_RO_eq();
             // success
-            std::cout << "parsed RO eq\n";
             return;
         default:
             throw parser_unexpected_token_error(*m_token_current);
@@ -585,11 +553,9 @@ class parser
         case TK_OP_LT:
             ++m_token_current;
             // success
-            std::cout << "parsed RO_lt lt\n";
             return;
         default:
             // epsilon
-            std::cout << "epsilon on RO_lt\n";
             return;
         }
     }
@@ -604,11 +570,9 @@ class parser
         case TK_OP_GT:
             ++m_token_current;
             // success
-            std::cout << "parsed RO_gt gt\n";
             return;
         default:
             // epsilon
-            std::cout << "epsilon on RO_gt\n";
             return;
         }
     }
@@ -623,11 +587,9 @@ class parser
         case TK_OP_EQ:
             ++m_token_current;
             // success
-            std::cout << "parsed RO_eq eq\n";
             return;
         default:
             // epsilon
-            std::cout << "epsilon on RO_eq\n";
             return;
         }
     }
@@ -648,8 +610,6 @@ public:
 
         if (m_token_current->type != TK_EOF)
             throw parser_unexpected_token_error(*m_token_current);
-
-        std::cout << "successfully parsed :)\n";
 
         return 0;
     }

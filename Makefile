@@ -5,7 +5,7 @@
 #
 
 LDFLAGS=
-CXXFLAGS=-std=c++11 -g
+CXXFLAGS=-std=c++11
 
 .PHONY: all
 all: tablegen frontEnd
@@ -23,7 +23,7 @@ tablegen: tablegen.o
 .PHONY: clean
 clean:
 	rm -rf *.o
-#	rm -f frontEnd
-#	rm -f tablegen
+	rm -f frontEnd
+	rm -f tablegen
 
 .SECONDARY:
