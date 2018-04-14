@@ -442,6 +442,9 @@ public:
     token operator*()
     { return m_scanned_token; }
 
+    token* operator->()
+    { return &m_scanned_token; }
+
     token_iterator operator++()
     {
         (*this)++;
