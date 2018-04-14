@@ -20,6 +20,11 @@ namespace p2
  */
 class parser_error : std::exception
 {
+protected:
+    parser_error() : std::exception()
+    {
+    }
+
 public:
     virtual ~parser_error() = default;
 
@@ -52,7 +57,7 @@ class parser_unexpected_token_error : public parser_error
         case TK_IDENTIFIER:
             return std::string("identifier \"") + tk.content + std::string("\"");
         case TK_INTEGER:
-            return std::string("integer \"") + tk.content + std::string("\"");
+            return std::string("integer ") + tk.content;
         case TK_KW_IFF:
         case TK_KW_ITER:
         case TK_KW_LET:
@@ -65,7 +70,7 @@ class parser_unexpected_token_error : public parser_error
         case TK_KW_THEN:
         case TK_KW_VAR:
         case TK_KW_VOID:
-            return std::string("keyword ") + tk.content;
+            return std::string("keyword \"") + tk.content + std::string("\"");
         case TK_OP_EQ:
         case TK_OP_LT:
         case TK_OP_GT:
@@ -89,7 +94,9 @@ class parser_unexpected_token_error : public parser_error
     }
 
 public:
-    parser_unexpected_token_error(token p_unexpected_token) : m_unexpected_token(p_unexpected_token)
+    parser_unexpected_token_error(token p_unexpected_token)
+            : parser_error(),
+            m_unexpected_token(p_unexpected_token)
     {
     }
 

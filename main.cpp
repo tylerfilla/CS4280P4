@@ -35,26 +35,31 @@ int main(int argc, char* argv[])
         }
     }
 
-    // Prepare scanner and parser on input stream
+    // Input stream
     auto& input = *input_ptr;
+
+    // Scanner and parser
     using input_iterator = typename std::istreambuf_iterator<char>;
     p2::scanner<input_iterator> scanner(input_iterator(input), input_iterator {});
-    p2::parser<input_iterator> parser(scanner.scan_begin(), scanner.scan_end());
+    p2::parser<input_iterator>* parser;
 
     // Try to parse the input
     try
     {
-        parser.parse();
+        parser = new p2::parser<input_iterator>(scanner.scan_begin(), scanner.scan_end());
+        parser->parse();
     }
-    catch (p2::scanner_error& e)
+    catch (const p2::scanner_error& e)
     {
         std::cerr << "an error has occurred while scanning the input\n";
         std::cerr << "error: " << e.really_what() << "\n";
+        return 1;
     }
-    catch (p2::parser_error& e)
+    catch (const p2::parser_error& e)
     {
         std::cerr << "an error has occurred while parsing the input\n";
         std::cerr << "error: " << e.really_what() << "\n";
+        return 1;
     }
 
     // TODO: Get the tree and print it out

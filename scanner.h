@@ -37,6 +37,8 @@ protected:
     }
 
 public:
+    virtual ~scanner_error() = default;
+
     unsigned int get_line() const
     { return m_line; }
 
