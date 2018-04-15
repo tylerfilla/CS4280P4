@@ -11,6 +11,7 @@
 
 #include "parser.h"
 #include "scanner.h"
+#include "tree.h"
 
 int main(int argc, char* argv[])
 {
@@ -62,7 +63,10 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    // TODO: Get the tree and print it out
+    // Get the parse tree
+    auto tree = parser->get_tree();
+
+    std::cout << "tree ptr: " << tree << "\n";
 
     return 0;
 }

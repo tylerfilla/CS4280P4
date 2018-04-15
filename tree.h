@@ -101,10 +101,10 @@ struct node_block : node
 struct node_vars : node
 {
     /** Item 2. */
-    token tk_identifier;
+    token tk_name;
 
     /** Item 4. */
-    token tk_integer;
+    token tk_value;
 
     /** Item 5. */
     node_mvars* nd_mvars;
@@ -462,10 +462,10 @@ struct node_loop : node
 struct node_assign : node
 {
     /** Item 2. */
-    token tk_identifier;
+    token tk_name;
 
     /** Item 4. */
-    node_expr* nd_expr;
+    node_expr* nd_value;
 };
 
 /**

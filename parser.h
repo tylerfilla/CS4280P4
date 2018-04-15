@@ -11,6 +11,8 @@
 #include <string>
 
 #include "scanner.h"
+#include "token.h"
+#include "tree.h"
 
 namespace p2
 {
@@ -134,18 +136,26 @@ class parser
     token_iterator m_token_end;
 
     /**
+     * The completed parse tree.
+     */
+    tree::node* m_tree;
+
+    /**
      * BNF: <program>
      */
-    void parse_program()
+    tree::node_program* parse_program()
     {
         switch (m_token_current->type)
         {
         case TK_KW_PROGRAM:
-            ++m_token_current;
-            parse_vars();
-            parse_block();
-            // success
-            return;
+            {
+                ++m_token_current;
+                auto node = new tree::node_program {};
+                node->nd_vars = parse_vars();
+                node->nd_block = parse_block();
+                // success
+                return node;
+            }
         default:
             throw parser_unexpected_token_error(*m_token_current);
         }
@@ -154,22 +164,26 @@ class parser
     /**
      * BNF: <block>
      */
-    void parse_block()
+    tree::node_block* parse_block()
     {
         switch (m_token_current->type)
         {
         case TK_KW_START:
-            ++m_token_current;
-            parse_vars();
-            parse_stats();
-            switch (m_token_current->type)
             {
-            case TK_KW_STOP:
                 ++m_token_current;
-                // success
-                return;
-            default:
-                throw parser_unexpected_token_error(*m_token_current);
+                auto node = new tree::node_block {};
+                node->nd_vars = parse_vars();
+                node->nd_stats = parse_stats();
+                switch (m_token_current->type)
+                {
+                case TK_KW_STOP:
+                    ++m_token_current;
+                    // success
+                    return node;
+                default:
+                    delete node;
+                    throw parser_unexpected_token_error(*m_token_current);
+                }
             }
         default:
             throw parser_unexpected_token_error(*m_token_current);
@@ -179,64 +193,80 @@ class parser
     /**
      * BNF: <vars>
      */
-    void parse_vars()
+    tree::node_vars* parse_vars()
     {
         switch (m_token_current->type)
         {
         case TK_KW_VAR:
-            ++m_token_current;
-            switch (m_token_current->type)
             {
-            case TK_IDENTIFIER:
                 ++m_token_current;
+                auto node = new tree::node_vars {};
                 switch (m_token_current->type)
                 {
-                case TK_OP_EQ:
+                case TK_IDENTIFIER:
+                    node->tk_name = *m_token_current;
                     ++m_token_current;
                     switch (m_token_current->type)
                     {
-                    case TK_INTEGER:
+                    case TK_OP_EQ:
                         ++m_token_current;
-                        parse_mvars();
-                        // success
-                        return;
+                        switch (m_token_current->type)
+                        {
+                        case TK_INTEGER:
+                            node->tk_value = *m_token_current;
+                            ++m_token_current;
+                            node->nd_mvars = parse_mvars();
+                            // success
+                            return node;
+                        default:
+                            delete node;
+                            throw parser_unexpected_token_error(*m_token_current);
+                        }
                     default:
+                        delete node;
                         throw parser_unexpected_token_error(*m_token_current);
                     }
                 default:
+                    delete node;
                     throw parser_unexpected_token_error(*m_token_current);
                 }
-            default:
-                throw parser_unexpected_token_error(*m_token_current);
             }
         default:
             // epsilon
-            return;
+            return nullptr;
         }
     }
 
     /**
      * BNF: <mvars>
      */
-    void parse_mvars()
+    tree::node_mvars* parse_mvars()
     {
         switch (m_token_current->type)
         {
         case TK_OP_DOT:
-            ++m_token_current;
-            // success
-            return;
-        case TK_OP_COLON:
-            ++m_token_current;
-            switch (m_token_current->type)
             {
-            case TK_IDENTIFIER:
                 ++m_token_current;
-                parse_mvars();
+                auto node = new tree::node_mvars_p1 {};
                 // success
-                return;
-            default:
-                throw parser_unexpected_token_error(*m_token_current);
+                return node;
+            }
+        case TK_OP_COLON:
+            {
+                ++m_token_current;
+                auto node = new tree::node_mvars_p2 {};
+                switch (m_token_current->type)
+                {
+                case TK_IDENTIFIER:
+                    node->tk_identifier = *m_token_current;
+                    ++m_token_current;
+                    node->nd_mvars = parse_mvars();
+                    // success
+                    return node;
+                default:
+                    delete node;
+                    throw parser_unexpected_token_error(*m_token_current);
+                }
             }
         default:
             throw parser_unexpected_token_error(*m_token_current);
@@ -246,67 +276,86 @@ class parser
     /**
      * BNF: <expr> (left-factorized)
      */
-    void parse_expr()
+    tree::node_expr* parse_expr()
     {
-        parse_M();
-        parse_expr_2();
+        auto node = new tree::node_expr {};
+        node->nd_M = parse_M();
+        node->nd_expr_2 = parse_expr_2();
         // success
-        return;
+        return node;
     }
 
     /**
      * BNF: <expr_2> (left-factorized, added by me)
      */
-    void parse_expr_2()
+    tree::node_expr_2* parse_expr_2()
     {
         switch (m_token_current->type)
         {
         case TK_OP_PLUS:
-            ++m_token_current;
-            parse_expr();
-            // success
-            return;
+            {
+                ++m_token_current;
+                auto node = new tree::node_expr_2_p1 {};
+                node->nd_rhs = parse_expr();
+                // success
+                return node;
+            }
         case TK_OP_MINUS:
-            ++m_token_current;
-            parse_expr();
-            // success
-            return;
+            {
+                ++m_token_current;
+                auto node = new tree::node_expr_2_p2 {};
+                node->nd_rhs = parse_expr();
+                // success
+                return node;
+            }
         case TK_OP_SLASH:
-            ++m_token_current;
-            parse_expr();
-            // success
-            return;
+            {
+                ++m_token_current;
+                auto node = new tree::node_expr_2_p3 {};
+                node->nd_rhs = parse_expr();
+                // success
+                return node;
+            }
         case TK_OP_ASTERISK:
-            ++m_token_current;
-            parse_expr();
-            // success
-            return;
+            {
+                ++m_token_current;
+                auto node_p4 = new tree::node_expr_2_p4 {};
+                node_p4->nd_rhs = parse_expr();
+                // success
+                return node_p4;
+            }
         default:
             // epsilon
-            return;
+            return nullptr;
         }
     }
 
     /**
      * BNF: <M>
      */
-    void parse_M()
+    tree::node_M* parse_M()
     {
         switch (m_token_current->type)
         {
         case TK_OP_PERCENT:
-            ++m_token_current;
-            parse_M();
-            // success
-            return;
+            {
+                ++m_token_current;
+                auto node = new tree::node_M_p1 {};
+                node->nd_M = parse_M();
+                // success
+                return node;
+            }
         // FIRST(R)
         case TK_OP_OPAREN:
         case TK_IDENTIFIER:
         case TK_INTEGER:
-            // unparsed nonterminal: do not consume token
-            parse_R();
-            // success
-            return;
+            {
+                // unparsed nonterminal: do not consume token
+                auto node = new tree::node_M_p2 {};
+                node->nd_R = parse_R();
+                // success
+                return node;
+            }
         default:
             throw parser_unexpected_token_error(*m_token_current);
         }
@@ -315,30 +364,42 @@ class parser
     /**
      * BNF: <R>
      */
-    void parse_R()
+    tree::node_R* parse_R()
     {
         switch (m_token_current->type)
         {
         case TK_OP_OPAREN:
-            ++m_token_current;
-            parse_expr();
-            switch (m_token_current->type)
             {
-            case TK_OP_CPAREN:
                 ++m_token_current;
-                // success
-                return;
-            default:
-                throw parser_unexpected_token_error(*m_token_current);
+                auto node = new tree::node_R_p1 {};
+                node->nd_expr = parse_expr();
+                switch (m_token_current->type)
+                {
+                case TK_OP_CPAREN:
+                    ++m_token_current;
+                    // success
+                    return node;
+                default:
+                    delete node;
+                    throw parser_unexpected_token_error(*m_token_current);
+                }
             }
         case TK_IDENTIFIER:
-            ++m_token_current;
-            // success
-            return;
+            {
+                auto node = new tree::node_R_p2 {};
+                node->tk_identifier = *m_token_current;
+                ++m_token_current;
+                // success
+                return node;
+            }
         case TK_INTEGER:
-            ++m_token_current;
-            // success
-            return;
+            {
+                auto node = new tree::node_R_p3 {};
+                node->tk_integer = *m_token_current;
+                ++m_token_current;
+                // success
+                return node;
+            }
         default:
             throw parser_unexpected_token_error(*m_token_current);
         }
@@ -347,19 +408,20 @@ class parser
     /**
      * BNF: <stats>
      */
-    void parse_stats()
+    tree::node_stats* parse_stats()
     {
         // unparsed nonterminal: do not consume token
-        parse_stat();
-        parse_mStat();
+        auto node = new tree::node_stats {};
+        node->nd_stat = parse_stat();
+        node->nd_mStat = parse_mStat();
         // success
-        return;
+        return node;
     }
 
     /**
      * BNF: <mStat>
      */
-    void parse_mStat()
+    tree::node_mStat* parse_mStat()
     {
         switch (m_token_current->type)
         {
@@ -370,60 +432,81 @@ class parser
         case TK_KW_IFF:
         case TK_KW_ITER:
         case TK_KW_LET:
-            // unparsed nonterminal: do not consume token
-            parse_stat();
-            parse_mStat();
-            // success
-            return;
+            {
+                // unparsed nonterminal: do not consume token
+                auto node = new tree::node_mStat {};
+                node->nd_stat = parse_stat();
+                node->nd_mStat = parse_mStat();
+                // success
+                return node;
+            }
         default:
             // epsilon
-            return;
+            return nullptr;
         }
     }
 
     /**
      * BNF: <stat>
      */
-    void parse_stat()
+    tree::node_stat* parse_stat()
     {
         switch (m_token_current->type)
         {
         // FIRST(in)
         case TK_KW_READ:
-            // unparsed nonterminal: do not consume token
-            parse_in();
-            // success
-            return;
+            {
+                // unparsed nonterminal: do not consume token
+                auto node = new tree::node_stat_p1 {};
+                node->nd_in = parse_in();
+                // success
+                return node;
+            }
         // FIRST(out)
         case TK_KW_PRINT:
-            // unparsed nonterminal: do not consume token
-            parse_out();
-            // success
-            return;
+            {
+                // unparsed nonterminal: do not consume token
+                auto node = new tree::node_stat_p2 {};
+                node->nd_out = parse_out();
+                // success
+                return node;
+            }
         // FIRST(block)
         case TK_KW_START:
-            // unparsed nonterminal: do not consume token
-            parse_block();
-            // success
-            return;
+            {
+                // unparsed nonterminal: do not consume token
+                auto node = new tree::node_stat_p3 {};
+                node->nd_block = parse_block();
+                // success
+                return node;
+            }
         // FIRST(if)
         case TK_KW_IFF:
-            // unparsed nonterminal: do not consume token
-            parse_if();
-            // success
-            return;
+            {
+                // unparsed nonterminal: do not consume token
+                auto node_p4 = new tree::node_stat_p4 {};
+                node_p4->nd_if = parse_if();
+                // success
+                return node_p4;
+            }
         // FIRST(loop)
         case TK_KW_ITER:
-            // unparsed nonterminal: do not consume token
-            parse_loop();
-            // success
-            return;
+            {
+                // unparsed nonterminal: do not consume token
+                auto node_p5 = new tree::node_stat_p5 {};
+                node_p5->nd_loop = parse_loop();
+                // success
+                return node_p5;
+            }
         // FIRST(assign)
         case TK_KW_LET:
-            // unparsed nonterminal: do not consume token
-            parse_assign();
-            // success
-            return;
+            {
+                // unparsed nonterminal: do not consume token
+                auto node_p6 = new tree::node_stat_p6 {};
+                node_p6->nd_assign = parse_assign();
+                // success
+                return node_p6;
+            }
         default:
             throw parser_unexpected_token_error(*m_token_current);
         }
@@ -432,7 +515,7 @@ class parser
     /**
      * BNF: <in>
      */
-    void parse_in()
+    tree::node_in* parse_in()
     {
         switch (m_token_current->type)
         {
@@ -441,15 +524,20 @@ class parser
             switch (m_token_current->type)
             {
             case TK_IDENTIFIER:
-                ++m_token_current;
-                switch (m_token_current->type)
                 {
-                case TK_OP_DOT:
+                    auto node = new tree::node_in {};
+                    node->tk_identifier = *m_token_current;
                     ++m_token_current;
-                    // success
-                    return;
-                default:
-                    throw parser_unexpected_token_error(*m_token_current);
+                    switch (m_token_current->type)
+                    {
+                    case TK_OP_DOT:
+                        ++m_token_current;
+                        // success
+                        return node;
+                    default:
+                        delete node;
+                        throw parser_unexpected_token_error(*m_token_current);
+                    }
                 }
             default:
                 throw parser_unexpected_token_error(*m_token_current);
@@ -462,21 +550,25 @@ class parser
     /**
      * BNF: <out>
      */
-    void parse_out()
+    tree::node_out* parse_out()
     {
         switch (m_token_current->type)
         {
         case TK_KW_PRINT:
-            ++m_token_current;
-            parse_expr();
-            switch (m_token_current->type)
             {
-            case TK_OP_DOT:
                 ++m_token_current;
-                // success
-                return;
-            default:
-                throw parser_unexpected_token_error(*m_token_current);
+                auto node = new tree::node_out {};
+                node->nd_expr = parse_expr();
+                switch (m_token_current->type)
+                {
+                case TK_OP_DOT:
+                    ++m_token_current;
+                    // success
+                    return node;
+                default:
+                    delete node;
+                    throw parser_unexpected_token_error(*m_token_current);
+                }
             }
         default:
             throw parser_unexpected_token_error(*m_token_current);
@@ -486,7 +578,7 @@ class parser
     /**
      * BNF: <if>
      */
-    void parse_if()
+    tree::node_if* parse_if()
     {
         switch (m_token_current->type)
         {
@@ -495,19 +587,23 @@ class parser
             switch (m_token_current->type)
             {
             case TK_OP_OPAREN:
-                ++m_token_current;
-                parse_expr();
-                parse_RO();
-                parse_expr();
-                switch (m_token_current->type)
                 {
-                case TK_OP_CPAREN:
                     ++m_token_current;
-                    parse_stat();
-                    // success
-                    return;
-                default:
-                    throw parser_unexpected_token_error(*m_token_current);
+                    auto node = new tree::node_if {};
+                    node->nd_lhs = parse_expr();
+                    node->nd_operator = parse_RO();
+                    node->nd_rhs = parse_expr();
+                    switch (m_token_current->type)
+                    {
+                    case TK_OP_CPAREN:
+                        ++m_token_current;
+                        node->nd_body = parse_stat();
+                        // success
+                        return node;
+                    default:
+                        delete node;
+                        throw parser_unexpected_token_error(*m_token_current);
+                    }
                 }
             default:
                 throw parser_unexpected_token_error(*m_token_current);
@@ -520,7 +616,7 @@ class parser
     /**
      * BNF: <loop>
      */
-    void parse_loop()
+    tree::node_loop* parse_loop()
     {
         switch (m_token_current->type)
         {
@@ -529,19 +625,22 @@ class parser
             switch (m_token_current->type)
             {
             case TK_OP_OPAREN:
-                ++m_token_current;
-                parse_expr();
-                parse_RO();
-                parse_expr();
-                switch (m_token_current->type)
                 {
-                case TK_OP_CPAREN:
                     ++m_token_current;
-                    parse_stat();
-                    // success
-                    return;
-                default:
-                    throw parser_unexpected_token_error(*m_token_current);
+                    auto node = new tree::node_loop {};
+                    node->nd_lhs = parse_expr();
+                    node->nd_operator = parse_RO();
+                    node->nd_rhs = parse_expr();
+                    switch (m_token_current->type)
+                    {
+                    case TK_OP_CPAREN:
+                        ++m_token_current;
+                        node->nd_body = parse_stat();
+                        // success
+                        return node;
+                    default:
+                        throw parser_unexpected_token_error(*m_token_current);
+                    }
                 }
             default:
                 throw parser_unexpected_token_error(*m_token_current);
@@ -554,7 +653,7 @@ class parser
     /**
      * BNF: <assign>
      */
-    void parse_assign()
+    tree::node_assign* parse_assign()
     {
         switch (m_token_current->type)
         {
@@ -563,23 +662,29 @@ class parser
             switch (m_token_current->type)
             {
             case TK_IDENTIFIER:
-                ++m_token_current;
-                switch (m_token_current->type)
                 {
-                case TK_OP_EQ:
+                    auto node = new tree::node_assign {};
+                    node->tk_name = *m_token_current;
                     ++m_token_current;
-                    parse_expr();
                     switch (m_token_current->type)
                     {
-                    case TK_OP_DOT:
+                    case TK_OP_EQ:
                         ++m_token_current;
-                        // success
-                        return;
+                        node->nd_value = parse_expr();
+                        switch (m_token_current->type)
+                        {
+                        case TK_OP_DOT:
+                            ++m_token_current;
+                            // success
+                            return node;
+                        default:
+                            delete node;
+                            throw parser_unexpected_token_error(*m_token_current);
+                        }
                     default:
+                        delete node;
                         throw parser_unexpected_token_error(*m_token_current);
                     }
-                default:
-                    throw parser_unexpected_token_error(*m_token_current);
                 }
             default:
                 throw parser_unexpected_token_error(*m_token_current);
@@ -592,25 +697,34 @@ class parser
     /**
      * BNF: <RO> (left-factorized)
      */
-    void parse_RO()
+    tree::node_RO* parse_RO()
     {
         switch (m_token_current->type)
         {
         case TK_OP_LT:
-            ++m_token_current;
-            parse_RO_lt();
-            // success
-            return;
+            {
+                ++m_token_current;
+                auto node = new tree::node_RO_p1 {};
+                node->nd_lt = parse_RO_lt();
+                // success
+                return node;
+            }
         case TK_OP_GT:
-            ++m_token_current;
-            parse_RO_gt();
-            // success
-            return;
+            {
+                ++m_token_current;
+                auto node = new tree::node_RO_p2 {};
+                node->nd_gt = parse_RO_gt();
+                // success
+                return node;
+            }
         case TK_OP_EQ:
-            ++m_token_current;
-            parse_RO_eq();
-            // success
-            return;
+            {
+                ++m_token_current;
+                auto node = new tree::node_RO_p3 {};
+                node->nd_eq = parse_RO_eq();
+                // success
+                return node;
+            }
         default:
             throw parser_unexpected_token_error(*m_token_current);
         }
@@ -619,51 +733,60 @@ class parser
     /**
      * BNF: <RO_lt> (left-factorized, added by me)
      */
-    void parse_RO_lt()
+    tree::node_RO_lt* parse_RO_lt()
     {
         switch (m_token_current->type)
         {
         case TK_OP_LT:
-            ++m_token_current;
-            // success
-            return;
+            {
+                ++m_token_current;
+                auto node = new tree::node_RO_lt {};
+                // success
+                return node;
+            }
         default:
             // epsilon
-            return;
+            return nullptr;
         }
     }
 
     /**
      * BNF: <RO_gt> (left-factorized, added by me)
      */
-    void parse_RO_gt()
+    tree::node_RO_gt* parse_RO_gt()
     {
         switch (m_token_current->type)
         {
         case TK_OP_GT:
-            ++m_token_current;
-            // success
-            return;
+            {
+                ++m_token_current;
+                auto node = new tree::node_RO_gt {};
+                // success
+                return node;
+            }
         default:
             // epsilon
-            return;
+            return nullptr;
         }
     }
 
     /**
      * BNF: <RO_eq> (left-factorized, added by me)
      */
-    void parse_RO_eq()
+    tree::node_RO_eq* parse_RO_eq()
     {
         switch (m_token_current->type)
         {
         case TK_OP_EQ:
-            ++m_token_current;
-            // success
-            return;
+            {
+                ++m_token_current;
+                auto node = new tree::node_RO_eq {};
+                // success
+                return node;
+            }
         default:
             // epsilon
-            return;
+            return nullptr;
         }
     }
 
@@ -671,28 +794,38 @@ public:
     parser(token_iterator p_token_current, token_iterator p_token_end)
             : m_token_current(p_token_current)
             , m_token_end(p_token_end)
+            , m_tree {}
     {
     }
 
     parser(const parser& rhs) = delete;
 
-    ~parser() = default;
+    ~parser()
+    { delete m_tree; }
 
     parser& operator=(const parser& rhs) = delete;
+
+    /**
+     * @return The completed parse tree
+     */
+    tree::node* get_tree() const
+    { return m_tree; }
 
     /**
      * Parse from the configured source token stream.
      */
     void parse()
     {
-        parse_program();
+        auto node = parse_program();
         switch (m_token_current->type)
         {
         case TK_EOF:
             ++m_token_current;
             // success
+            m_tree = node;
             return;
         default:
+            delete node;
             throw parser_unexpected_token_error(*m_token_current);
         }
     }
