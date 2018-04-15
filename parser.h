@@ -674,7 +674,11 @@ public:
     {
     }
 
+    parser(const parser& rhs) = delete;
+
     ~parser() = default;
+
+    parser& operator=(const parser& rhs) = delete;
 
     /**
      * Parse from the configured source token stream.
