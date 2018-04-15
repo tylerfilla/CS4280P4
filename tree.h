@@ -62,6 +62,7 @@ struct node_RO_eq;
  */
 struct node
 {
+    virtual ~node() = default;
 };
 
 /**
@@ -76,6 +77,8 @@ struct node_program : node
 
     /** Item 3. */
     node_block* nd_block;
+
+    ~node_program() final;
 };
 
 /**
@@ -90,6 +93,8 @@ struct node_block : node
 
     /** Item 3. */
     node_stats* nd_stats;
+
+    ~node_block() final;
 };
 
 /**
@@ -108,6 +113,8 @@ struct node_vars : node
 
     /** Item 5. */
     node_mvars* nd_mvars;
+
+    ~node_vars() final;
 };
 
 /**
@@ -116,7 +123,7 @@ struct node_vars : node
  */
 struct node_mvars : node
 {
-    // nothing
+    ~node_mvars() override = default;
 };
 
 /**
@@ -127,7 +134,7 @@ struct node_mvars : node
  */
 struct node_mvars_p1 : node_mvars
 {
-    // nothing
+    ~node_mvars_p1() final = default;
 };
 
 /**
@@ -142,6 +149,8 @@ struct node_mvars_p2 : node_mvars
 
     /** Item 3. */
     node_mvars* nd_mvars;
+
+    ~node_mvars_p2() final;
 };
 
 /**
@@ -156,6 +165,8 @@ struct node_expr : node
 
     /** Item 2. */
     node_expr_2* nd_expr_2;
+
+    ~node_expr() final;
 };
 
 /**
@@ -165,7 +176,7 @@ struct node_expr : node
  */
 struct node_expr_2 : node
 {
-    // nothing
+    ~node_expr_2() override = default;
 };
 
 /**
@@ -177,6 +188,8 @@ struct node_expr_2_p1 : node_expr_2
 {
     /** Item 2. */
     node_expr* nd_rhs;
+
+    ~node_expr_2_p1() final;
 };
 
 /**
@@ -188,6 +201,8 @@ struct node_expr_2_p2 : node_expr_2
 {
     /** Item 2. */
     node_expr* nd_rhs;
+
+    ~node_expr_2_p2() final;
 };
 
 /**
@@ -199,6 +214,8 @@ struct node_expr_2_p3 : node_expr_2
 {
     /** Item 2. */
     node_expr* nd_rhs;
+
+    ~node_expr_2_p3() final;
 };
 
 /**
@@ -210,6 +227,8 @@ struct node_expr_2_p4 : node_expr_2
 {
     /** Item 2. */
     node_expr* nd_rhs;
+
+    ~node_expr_2_p4() final;
 };
 
 /**
@@ -218,7 +237,7 @@ struct node_expr_2_p4 : node_expr_2
  */
 struct node_M : node
 {
-    // nothing
+    ~node_M() override = default;
 };
 
 /**
@@ -230,6 +249,8 @@ struct node_M_p1 : node_M
 {
     /** Item 2. */
     node_M* nd_M;
+
+    ~node_M_p1() final;
 };
 
 /**
@@ -241,6 +262,8 @@ struct node_M_p2 : node_M
 {
     /** Item 1. */
     node_R* nd_R;
+
+    ~node_M_p2() final;
 };
 
 /**
@@ -249,7 +272,7 @@ struct node_M_p2 : node_M
  */
 struct node_R : node
 {
-    // nothing
+    ~node_R() override = default;
 };
 
 /**
@@ -261,6 +284,8 @@ struct node_R_p1 : node_R
 {
     /** Item 2. */
     node_expr* nd_expr;
+
+    ~node_R_p1() final;
 };
 
 /**
@@ -273,6 +298,8 @@ struct node_R_p2 : node_R
 {
     /** Item 1. */
     token tk_identifier;
+
+    ~node_R_p2() final = default;
 };
 
 /**
@@ -285,6 +312,8 @@ struct node_R_p3 : node_R
 {
     /** Item 1. */
     token tk_integer;
+
+    ~node_R_p3() final = default;
 };
 
 /**
@@ -299,6 +328,8 @@ struct node_stats : node
 
     /** Item 2. */
     node_mStat* nd_mStat;
+
+    ~node_stats() final;
 };
 
 /**
@@ -314,6 +345,8 @@ struct node_mStat : node
 
     /** Item 2. */
     node_mStat* nd_mStat;
+
+    ~node_mStat() final;
 };
 
 /**
@@ -322,7 +355,7 @@ struct node_mStat : node
  */
 struct node_stat : node
 {
-    // nothing
+    ~node_stat() override = default;
 };
 
 /**
@@ -334,6 +367,8 @@ struct node_stat_p1 : node_stat
 {
     /** Item 1. */
     node_in* nd_in;
+
+    ~node_stat_p1() final;
 };
 
 /**
@@ -345,6 +380,8 @@ struct node_stat_p2 : node_stat
 {
     /** Item 1. */
     node_out* nd_out;
+
+    ~node_stat_p2() final;
 };
 
 /**
@@ -356,6 +393,8 @@ struct node_stat_p3 : node_stat
 {
     /** Item 1. */
     node_block* nd_block;
+
+    ~node_stat_p3() final;
 };
 
 /**
@@ -367,6 +406,8 @@ struct node_stat_p4 : node_stat
 {
     /** Item 1. */
     node_if* nd_if;
+
+    ~node_stat_p4() final;
 };
 
 /**
@@ -378,6 +419,8 @@ struct node_stat_p5 : node_stat
 {
     /** Item 1. */
     node_loop* nd_loop;
+
+    ~node_stat_p5() final;
 };
 
 /**
@@ -389,6 +432,8 @@ struct node_stat_p6 : node_stat
 {
     /** Item 1. */
     node_assign* nd_assign;
+
+    ~node_stat_p6() final;
 };
 
 /**
@@ -401,6 +446,8 @@ struct node_in : node
 {
     /** Item 2. */
     token tk_identifier;
+
+    ~node_in() final = default;
 };
 
 /**
@@ -412,6 +459,8 @@ struct node_out : node
 {
     /** Item 2. */
     node_expr* nd_expr;
+
+    ~node_out() final;
 };
 
 /**
@@ -432,6 +481,8 @@ struct node_if : node
 
     /** Item 7. */
     node_stat* nd_body;
+
+    ~node_if() final;
 };
 
 /**
@@ -452,6 +503,8 @@ struct node_loop : node
 
     /** Item 7. */
     node_stat* nd_body;
+
+    ~node_loop() final;
 };
 
 /**
@@ -466,6 +519,8 @@ struct node_assign : node
 
     /** Item 4. */
     node_expr* nd_value;
+
+    ~node_assign() final;
 };
 
 /**
@@ -474,7 +529,7 @@ struct node_assign : node
  */
 struct node_RO : node
 {
-    // nothing
+    ~node_RO() override = default;
 };
 
 /**
@@ -486,6 +541,8 @@ struct node_RO_p1 : node_RO
 {
     /** Item 2. */
     node_RO_lt* nd_lt;
+
+    ~node_RO_p1() final;
 };
 
 /**
@@ -497,6 +554,8 @@ struct node_RO_p2 : node_RO
 {
     /** Item 2. */
     node_RO_gt* nd_gt;
+
+    ~node_RO_p2() final;
 };
 
 /**
@@ -508,6 +567,8 @@ struct node_RO_p3 : node_RO
 {
     /** Item 2. */
     node_RO_eq* nd_eq;
+
+    ~node_RO_p3() final;
 };
 
 /**
@@ -519,7 +580,7 @@ struct node_RO_p3 : node_RO
  */
 struct node_RO_lt : node
 {
-    // nothing
+    ~node_RO_lt() final = default;
 };
 
 /**
@@ -531,7 +592,7 @@ struct node_RO_lt : node
  */
 struct node_RO_gt : node
 {
-    // nothing
+    ~node_RO_gt() final = default;
 };
 
 /**
@@ -543,8 +604,154 @@ struct node_RO_gt : node
  */
 struct node_RO_eq : node
 {
-    // nothing
+    ~node_RO_eq() final = default;
 };
+
+node_program::~node_program()
+{
+    delete nd_vars;
+    delete nd_block;
+}
+
+node_block::~node_block()
+{
+    delete nd_vars;
+    delete nd_stats;
+}
+
+node_vars::~node_vars()
+{
+    delete nd_mvars;
+}
+
+node_mvars_p2::~node_mvars_p2()
+{
+    delete nd_mvars;
+}
+
+node_expr::~node_expr()
+{
+    delete nd_M;
+    delete nd_expr_2;
+}
+
+node_expr_2_p1::~node_expr_2_p1()
+{
+    delete nd_rhs;
+}
+
+node_expr_2_p2::~node_expr_2_p2()
+{
+    delete nd_rhs;
+}
+
+node_expr_2_p3::~node_expr_2_p3()
+{
+    delete nd_rhs;
+}
+
+node_expr_2_p4::~node_expr_2_p4()
+{
+    delete nd_rhs;
+}
+
+node_M_p1::~node_M_p1()
+{
+    delete nd_M;
+}
+
+node_M_p2::~node_M_p2()
+{
+    delete nd_R;
+}
+
+node_R_p1::~node_R_p1()
+{
+    delete nd_expr;
+}
+
+node_stats::~node_stats()
+{
+    delete nd_stat;
+    delete nd_mStat;
+}
+
+node_mStat::~node_mStat()
+{
+    delete nd_stat;
+    delete nd_mStat;
+}
+
+node_stat_p1::~node_stat_p1()
+{
+    delete nd_in;
+}
+
+node_stat_p2::~node_stat_p2()
+{
+    delete nd_out;
+}
+
+node_stat_p3::~node_stat_p3()
+{
+    delete nd_block;
+}
+
+node_stat_p4::~node_stat_p4()
+{
+    delete nd_if;
+}
+
+node_stat_p5::~node_stat_p5()
+{
+    delete nd_loop;
+}
+
+node_stat_p6::~node_stat_p6()
+{
+    delete nd_assign;
+}
+
+node_out::~node_out()
+{
+    delete nd_expr;
+}
+
+node_if::~node_if()
+{
+    delete nd_lhs;
+    delete nd_operator;
+    delete nd_rhs;
+    delete nd_body;
+}
+
+node_loop::~node_loop()
+{
+    delete nd_lhs;
+    delete nd_operator;
+    delete nd_rhs;
+    delete nd_body;
+}
+
+node_assign::~node_assign()
+{
+    delete nd_value;
+}
+
+node_RO_p1::~node_RO_p1()
+{
+    delete nd_lt;
+}
+
+node_RO_p2::~node_RO_p2()
+{
+    delete nd_gt;
+}
+
+node_RO_p3::~node_RO_p3()
+{
+    delete nd_eq;
+}
 
 } // namespace tree
 
