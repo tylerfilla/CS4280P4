@@ -7,6 +7,7 @@
 #ifndef P2_TREE_H
 #define P2_TREE_H
 
+#include <string>
 #include "token.h"
 
 namespace p2
@@ -63,6 +64,12 @@ struct node_RO_eq;
 struct node
 {
     virtual ~node() = default;
+
+    virtual std::string get_name() const
+    { return ""; }
+
+    virtual std::string get_prod() const
+    { return ""; }
 };
 
 /**
@@ -79,6 +86,12 @@ struct node_program : node
     node_block* nd_block;
 
     ~node_program() final;
+
+    std::string get_name() const final
+    { return "program"; }
+
+    std::string get_prod() const final
+    { return "<program>"; }
 };
 
 /**
@@ -95,6 +108,12 @@ struct node_block : node
     node_stats* nd_stats;
 
     ~node_block() final;
+
+    std::string get_name() const final
+    { return "block"; }
+
+    std::string get_prod() const final
+    { return "<block>"; }
 };
 
 /**
@@ -115,6 +134,12 @@ struct node_vars : node
     node_mvars* nd_mvars;
 
     ~node_vars() final;
+
+    std::string get_name() const final
+    { return "vars"; }
+
+    std::string get_prod() const final
+    { return "<vars>"; }
 };
 
 /**
@@ -135,6 +160,12 @@ struct node_mvars : node
 struct node_mvars_p1 : node_mvars
 {
     ~node_mvars_p1() final = default;
+
+    std::string get_name() const final
+    { return "mvars"; }
+
+    std::string get_prod() const final
+    { return "<mvars> #1 (starts with dot)"; }
 };
 
 /**
@@ -151,6 +182,12 @@ struct node_mvars_p2 : node_mvars
     node_mvars* nd_mvars;
 
     ~node_mvars_p2() final;
+
+    std::string get_name() const final
+    { return "mvars"; }
+
+    std::string get_prod() const final
+    { return "<mvars> #2 (starts with colon)"; }
 };
 
 /**
@@ -167,6 +204,12 @@ struct node_expr : node
     node_expr_2* nd_expr_2;
 
     ~node_expr() final;
+
+    std::string get_name() const final
+    { return "expr"; }
+
+    std::string get_prod() const final
+    { return "<expr>"; }
 };
 
 /**
@@ -190,6 +233,12 @@ struct node_expr_2_p1 : node_expr_2
     node_expr* nd_rhs;
 
     ~node_expr_2_p1() final;
+
+    std::string get_name() const final
+    { return "expr_2"; }
+
+    std::string get_prod() const final
+    { return "<expr_2> #1 (starts with plus)"; }
 };
 
 /**
@@ -203,6 +252,12 @@ struct node_expr_2_p2 : node_expr_2
     node_expr* nd_rhs;
 
     ~node_expr_2_p2() final;
+
+    std::string get_name() const final
+    { return "expr_2"; }
+
+    std::string get_prod() const final
+    { return "<expr_2> #2 (starts with minus)"; }
 };
 
 /**
@@ -216,6 +271,12 @@ struct node_expr_2_p3 : node_expr_2
     node_expr* nd_rhs;
 
     ~node_expr_2_p3() final;
+
+    std::string get_name() const final
+    { return "expr_2"; }
+
+    std::string get_prod() const final
+    { return "<expr_2> #3 (starts with slash)"; }
 };
 
 /**
@@ -229,6 +290,12 @@ struct node_expr_2_p4 : node_expr_2
     node_expr* nd_rhs;
 
     ~node_expr_2_p4() final;
+
+    std::string get_name() const final
+    { return "expr_2"; }
+
+    std::string get_prod() const final
+    { return "<expr_2> #4 (starts with asterisk)"; }
 };
 
 /**
@@ -251,6 +318,12 @@ struct node_M_p1 : node_M
     node_M* nd_M;
 
     ~node_M_p1() final;
+
+    std::string get_name() const final
+    { return "M"; }
+
+    std::string get_prod() const final
+    { return "<M> #1 (starts with percent)"; }
 };
 
 /**
@@ -264,6 +337,12 @@ struct node_M_p2 : node_M
     node_R* nd_R;
 
     ~node_M_p2() final;
+
+    std::string get_name() const final
+    { return "M"; }
+
+    std::string get_prod() const final
+    { return "<M> #2 (starts with <R>)"; }
 };
 
 /**
@@ -286,6 +365,12 @@ struct node_R_p1 : node_R
     node_expr* nd_expr;
 
     ~node_R_p1() final;
+
+    std::string get_name() const final
+    { return "R"; }
+
+    std::string get_prod() const final
+    { return "<R> #1 (starts with o-paren)"; }
 };
 
 /**
@@ -300,6 +385,12 @@ struct node_R_p2 : node_R
     token tk_identifier;
 
     ~node_R_p2() final = default;
+
+    std::string get_name() const final
+    { return "R"; }
+
+    std::string get_prod() const final
+    { return "<R> #2 (starts with identifier)"; }
 };
 
 /**
@@ -314,6 +405,12 @@ struct node_R_p3 : node_R
     token tk_integer;
 
     ~node_R_p3() final = default;
+
+    std::string get_name() const final
+    { return "R"; }
+
+    std::string get_prod() const final
+    { return "<R> #3 (starts with integer)"; }
 };
 
 /**
@@ -330,6 +427,12 @@ struct node_stats : node
     node_mStat* nd_mStat;
 
     ~node_stats() final;
+
+    std::string get_name() const final
+    { return "stats"; }
+
+    std::string get_prod() const final
+    { return "<stats>"; }
 };
 
 /**
@@ -347,6 +450,12 @@ struct node_mStat : node
     node_mStat* nd_mStat;
 
     ~node_mStat() final;
+
+    std::string get_name() const final
+    { return "mStat"; }
+
+    std::string get_prod() const final
+    { return "<mStat>"; }
 };
 
 /**
@@ -369,6 +478,12 @@ struct node_stat_p1 : node_stat
     node_in* nd_in;
 
     ~node_stat_p1() final;
+
+    std::string get_name() const final
+    { return "stat"; }
+
+    std::string get_prod() const final
+    { return "<stat> #1 (starts with <in>)"; }
 };
 
 /**
@@ -382,6 +497,12 @@ struct node_stat_p2 : node_stat
     node_out* nd_out;
 
     ~node_stat_p2() final;
+
+    std::string get_name() const final
+    { return "stat"; }
+
+    std::string get_prod() const final
+    { return "<stat> #2 (starts with <out>)"; }
 };
 
 /**
@@ -395,6 +516,12 @@ struct node_stat_p3 : node_stat
     node_block* nd_block;
 
     ~node_stat_p3() final;
+
+    std::string get_name() const final
+    { return "stat"; }
+
+    std::string get_prod() const final
+    { return "<stat> #3 (starts with <block>)"; }
 };
 
 /**
@@ -408,6 +535,12 @@ struct node_stat_p4 : node_stat
     node_if* nd_if;
 
     ~node_stat_p4() final;
+
+    std::string get_name() const final
+    { return "stat"; }
+
+    std::string get_prod() const final
+    { return "<stat> #4 (starts with <if>)"; }
 };
 
 /**
@@ -421,6 +554,12 @@ struct node_stat_p5 : node_stat
     node_loop* nd_loop;
 
     ~node_stat_p5() final;
+
+    std::string get_name() const final
+    { return "stat"; }
+
+    std::string get_prod() const final
+    { return "<stat> #5 (starts with <loop>)"; }
 };
 
 /**
@@ -434,6 +573,12 @@ struct node_stat_p6 : node_stat
     node_assign* nd_assign;
 
     ~node_stat_p6() final;
+
+    std::string get_name() const final
+    { return "stat"; }
+
+    std::string get_prod() const final
+    { return "<stat> #6 (starts with <assign>)"; }
 };
 
 /**
@@ -448,6 +593,12 @@ struct node_in : node
     token tk_identifier;
 
     ~node_in() final = default;
+
+    std::string get_name() const final
+    { return "in"; }
+
+    std::string get_prod() const final
+    { return "<in>"; }
 };
 
 /**
@@ -461,6 +612,12 @@ struct node_out : node
     node_expr* nd_expr;
 
     ~node_out() final;
+
+    std::string get_name() const final
+    { return "out"; }
+
+    std::string get_prod() const final
+    { return "<out>"; }
 };
 
 /**
@@ -483,6 +640,12 @@ struct node_if : node
     node_stat* nd_body;
 
     ~node_if() final;
+
+    std::string get_name() const final
+    { return "if"; }
+
+    std::string get_prod() const final
+    { return "<if>"; }
 };
 
 /**
@@ -505,6 +668,12 @@ struct node_loop : node
     node_stat* nd_body;
 
     ~node_loop() final;
+
+    std::string get_name() const final
+    { return "loop"; }
+
+    std::string get_prod() const final
+    { return "<loop>"; }
 };
 
 /**
@@ -521,6 +690,12 @@ struct node_assign : node
     node_expr* nd_value;
 
     ~node_assign() final;
+
+    std::string get_name() const final
+    { return "assign"; }
+
+    std::string get_prod() const final
+    { return "<assign>"; }
 };
 
 /**
@@ -543,6 +718,12 @@ struct node_RO_p1 : node_RO
     node_RO_lt* nd_lt;
 
     ~node_RO_p1() final;
+
+    std::string get_name() const final
+    { return "RO"; }
+
+    std::string get_prod() const final
+    { return "<RO> #1 (starts with lt-sign)"; }
 };
 
 /**
@@ -556,6 +737,12 @@ struct node_RO_p2 : node_RO
     node_RO_gt* nd_gt;
 
     ~node_RO_p2() final;
+
+    std::string get_name() const final
+    { return "RO"; }
+
+    std::string get_prod() const final
+    { return "<RO> #2 (starts with gt-sign)"; }
 };
 
 /**
@@ -569,6 +756,12 @@ struct node_RO_p3 : node_RO
     node_RO_eq* nd_eq;
 
     ~node_RO_p3() final;
+
+    std::string get_name() const final
+    { return "RO"; }
+
+    std::string get_prod() const final
+    { return "<RO> #3 (starts with eq-sign)"; }
 };
 
 /**
@@ -581,6 +774,12 @@ struct node_RO_p3 : node_RO
 struct node_RO_lt : node
 {
     ~node_RO_lt() final = default;
+
+    std::string get_name() const final
+    { return "RO_lt"; }
+
+    std::string get_prod() const final
+    { return "<RO_lt>"; }
 };
 
 /**
@@ -593,6 +792,12 @@ struct node_RO_lt : node
 struct node_RO_gt : node
 {
     ~node_RO_gt() final = default;
+
+    std::string get_name() const final
+    { return "RO_gt"; }
+
+    std::string get_prod() const final
+    { return "<RO_gt>"; }
 };
 
 /**
@@ -605,6 +810,12 @@ struct node_RO_gt : node
 struct node_RO_eq : node
 {
     ~node_RO_eq() final = default;
+
+    std::string get_name() const final
+    { return "RO_eq"; }
+
+    std::string get_prod() const final
+    { return "<RO_eq>"; }
 };
 
 node_program::~node_program()

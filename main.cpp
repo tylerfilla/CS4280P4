@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
     // Get the parse tree
     auto tree = parser->get_tree();
 
-    std::cout << "tree ptr: " << tree << "\n";
+    std::cout << "tree root prod: " << tree->get_prod() << "\n";
 
     return 0;
 }
