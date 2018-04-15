@@ -23,7 +23,7 @@ tablegen: tablegen.o
 .PHONY: clean
 clean:
 	rm -rf *.o
-	rm -f frontEnd
-	rm -f tablegen
+#	rm -f frontEnd
+#	rm -f tablegen
 
 .SECONDARY:
