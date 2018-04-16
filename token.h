@@ -1,15 +1,15 @@
 /*
  * Tyler Filla
  * CS 4280
- * Project 2
+ * Project 3
  */
 
-#ifndef P2_TOKEN_H
-#define P2_TOKEN_H
+#ifndef P3_TOKEN_H
+#define P3_TOKEN_H
 
 #include <string>
 
-namespace p2
+namespace p3
 {
 
 enum token_type
@@ -59,6 +59,6 @@ struct token
     unsigned int column_end;
 };
 
-} // namespace p2
+} // namespace p3
 
-#endif // #ifndef P2_TOKEN_H
+#endif // #ifndef P3_TOKEN_H

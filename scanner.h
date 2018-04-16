@@ -1,11 +1,11 @@
 /*
  * Tyler Filla
  * CS 4280
- * Project 2
+ * Project 3
  */
 
-#ifndef P2_SCANNER_H
-#define P2_SCANNER_H
+#ifndef P3_SCANNER_H
+#define P3_SCANNER_H
 
 #include <stdexcept>
 #include <string>
@@ -13,7 +13,7 @@
 #include "token.h"
 #include "scanner_table.gen.h"
 
-namespace p2
+namespace p3
 {
 
 /**
@@ -482,6 +482,6 @@ public:
     { return !(*this == rhs); }
 };
 
-} // namespace p2
+} // namespace p3
 
-#endif // #ifndef P2_SCANNER_H
+#endif // #ifndef P3_SCANNER_H

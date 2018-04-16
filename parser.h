@@ -1,11 +1,11 @@
 /*
  * Tyler Filla
  * CS 4280
- * Project 2
+ * Project 3
  */
 
-#ifndef P2_PARSER_H
-#define P2_PARSER_H
+#ifndef P3_PARSER_H
+#define P3_PARSER_H
 
 #include <stdexcept>
 #include <string>
@@ -14,7 +14,7 @@
 #include "token.h"
 #include "tree.h"
 
-namespace p2
+namespace p3
 {
 
 /**
@@ -123,7 +123,7 @@ public:
 template<typename InputIteratorT>
 class parser
 {
-    using token_iterator = typename p2::scanner<InputIteratorT>::token_iterator;
+    using token_iterator = typename p3::scanner<InputIteratorT>::token_iterator;
 
     /**
      * An iterator to the current location in the input token stream.
@@ -831,6 +831,6 @@ public:
     }
 };
 
-} // namespace p2
+} // namespace p3
 
-#endif // #ifndef P2_PARSER_H
+#endif // #ifndef P3_PARSER_H

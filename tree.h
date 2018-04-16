@@ -1,16 +1,16 @@
 /*
  * Tyler Filla
  * CS 4280
- * Project 2
+ * Project 3
  */
 
-#ifndef P2_TREE_H
-#define P2_TREE_H
+#ifndef P3_TREE_H
+#define P3_TREE_H
 
 #include <string>
 #include "token.h"
 
-namespace p2
+namespace p3
 {
 
 namespace tree
@@ -966,6 +966,6 @@ node_RO_p3::~node_RO_p3()
 
 } // namespace tree
 
-} // namespace p2
+} // namespace p3
 
-#endif // #ifndef P2_TREE_H
+#endif // #ifndef P3_TREE_H
