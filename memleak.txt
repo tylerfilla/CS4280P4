@@ -1,0 +1,2 @@
+the parser has many memory leaks when handling parse errors
+if, say, parse_stat() throws, the caller needs to catch this, clean up, and then rethrow
