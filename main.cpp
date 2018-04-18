@@ -10,6 +10,7 @@
 #include <sstream>
 #include <string>
 
+#include "analyzer.h"
 #include "parser.h"
 #include "scanner.h"
 #include "token.h"
@@ -65,7 +66,12 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    // TODO: Static semantics
+    // Get the parse tree
+    auto tree = parser->get_tree();
+
+    // Anaylze the semantics of the tree
+    p3::analyzer analyzer(tree);
+    analyzer.run();
 
     return 0;
 }
