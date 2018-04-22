@@ -350,6 +350,11 @@ private:
         }
         else if (auto node = dynamic_cast<tree::node_assign*>(p_node))
         {
+            const auto& name = node->tk_name.content;
+
+            if (!find_variable(name))
+                throw analyzer_undefined_variable_error(name);
+
             analyze(node->nd_value);
         }
         else if (auto node = dynamic_cast<tree::node_RO_p1*>(p_node))
