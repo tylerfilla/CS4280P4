@@ -69,9 +69,20 @@ int main(int argc, char* argv[])
     // Get the parse tree
     auto tree = parser->get_tree();
 
-    // Anaylze the semantics of the tree
+    // Create analyzer for parse tree
     p3::analyzer analyzer(tree);
-    analyzer.run();
+
+    // Try to analyze the tree
+    try
+    {
+        analyzer.run();
+    }
+    catch (const p3::analyzer_error& e)
+    {
+        std::cerr << "an error has occurred while analyzing the input\n";
+        std::cerr << "error: " << e.really_what() << "\n";
+        return 1;
+    }
 
     return 0;
 }
