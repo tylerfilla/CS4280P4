@@ -13,4 +13,8 @@ $ make
 Using
 =====
 
-TODO: Instructions for using statSem.
+$ ./statSem [basename]
+
+The usual invocation is supported.
+
+On successful semantic analysis, the program prints nothing.
