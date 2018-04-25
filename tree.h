@@ -1,16 +1,16 @@
 /*
  * Tyler Filla
  * CS 4280
- * Project 3
+ * Project 4
  */
 
-#ifndef P3_TREE_H
-#define P3_TREE_H
+#ifndef P4_TREE_H
+#define P4_TREE_H
 
 #include <string>
 #include "token.h"
 
-namespace p3
+namespace p4
 {
 
 namespace tree
@@ -27,7 +27,7 @@ struct node_expr;
 struct node_expr_2;
 struct node_expr_2_p1;
 struct node_expr_2_p2;
-struct node_expr_2_p3;
+struct node_expr_2_p4;
 struct node_expr_2_p4;
 struct node_M;
 struct node_M_p1;
@@ -35,13 +35,13 @@ struct node_M_p2;
 struct node_R;
 struct node_R_p1;
 struct node_R_p2;
-struct node_R_p3;
+struct node_R_p4;
 struct node_stats;
 struct node_mStat;
 struct node_stat;
 struct node_stat_p1;
 struct node_stat_p2;
-struct node_stat_p3;
+struct node_stat_p4;
 struct node_stat_p4;
 struct node_stat_p5;
 struct node_stat_p6;
@@ -53,7 +53,7 @@ struct node_assign;
 struct node_RO;
 struct node_RO_p1;
 struct node_RO_p2;
-struct node_RO_p3;
+struct node_RO_p4;
 struct node_RO_lt;
 struct node_RO_gt;
 struct node_RO_eq;
@@ -265,12 +265,12 @@ struct node_expr_2_p2 : node_expr_2
  * Tokens: none
  * Children: 2
  */
-struct node_expr_2_p3 : node_expr_2
+struct node_expr_2_p4 : node_expr_2
 {
     /** Item 2. */
     node_expr* nd_rhs;
 
-    ~node_expr_2_p3() final;
+    ~node_expr_2_p4() final;
 
     std::string get_name() const final
     { return "expr_2"; }
@@ -399,12 +399,12 @@ struct node_R_p2 : node_R
  * Children: none
  * Terminal.
  */
-struct node_R_p3 : node_R
+struct node_R_p4 : node_R
 {
     /** Item 1. */
     token tk_integer;
 
-    ~node_R_p3() final = default;
+    ~node_R_p4() final = default;
 
     std::string get_name() const final
     { return "R"; }
@@ -510,12 +510,12 @@ struct node_stat_p2 : node_stat
  * Tokens: none
  * Children: 1
  */
-struct node_stat_p3 : node_stat
+struct node_stat_p4 : node_stat
 {
     /** Item 1. */
     node_block* nd_block;
 
-    ~node_stat_p3() final;
+    ~node_stat_p4() final;
 
     std::string get_name() const final
     { return "stat"; }
@@ -750,12 +750,12 @@ struct node_RO_p2 : node_RO
  * Tokens: none
  * Children: 2
  */
-struct node_RO_p3 : node_RO
+struct node_RO_p4 : node_RO
 {
     /** Item 2. */
     node_RO_eq* nd_eq;
 
-    ~node_RO_p3() final;
+    ~node_RO_p4() final;
 
     std::string get_name() const final
     { return "RO"; }
@@ -856,7 +856,7 @@ node_expr_2_p2::~node_expr_2_p2()
     delete nd_rhs;
 }
 
-node_expr_2_p3::~node_expr_2_p3()
+node_expr_2_p4::~node_expr_2_p4()
 {
     delete nd_rhs;
 }
@@ -903,7 +903,7 @@ node_stat_p2::~node_stat_p2()
     delete nd_out;
 }
 
-node_stat_p3::~node_stat_p3()
+node_stat_p4::~node_stat_p4()
 {
     delete nd_block;
 }
@@ -959,13 +959,13 @@ node_RO_p2::~node_RO_p2()
     delete nd_gt;
 }
 
-node_RO_p3::~node_RO_p3()
+node_RO_p4::~node_RO_p4()
 {
     delete nd_eq;
 }
 
 } // namespace tree
 
-} // namespace p3
+} // namespace p4
 
-#endif // #ifndef P3_TREE_H
+#endif // #ifndef P4_TREE_H

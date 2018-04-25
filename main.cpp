@@ -1,7 +1,7 @@
 /*
  * Tyler Filla
  * CS 4280
- * Project 3
+ * Project 4
  */
 
 #include <fstream>
@@ -44,22 +44,22 @@ int main(int argc, char* argv[])
 
     // Scanner and parser
     using input_iterator = typename std::istreambuf_iterator<char>;
-    p3::scanner<input_iterator> scanner(input_iterator(input), input_iterator {});
-    p3::parser<input_iterator>* parser;
+    p4::scanner<input_iterator> scanner(input_iterator(input), input_iterator {});
+    p4::parser<input_iterator>* parser;
 
     // Try to parse the input
     try
     {
-        parser = new p3::parser<input_iterator>(scanner.scan_begin(), scanner.scan_end());
+        parser = new p4::parser<input_iterator>(scanner.scan_begin(), scanner.scan_end());
         parser->parse();
     }
-    catch (const p3::scanner_error& e)
+    catch (const p4::scanner_error& e)
     {
         std::cerr << "an error has occurred while scanning the input\n";
         std::cerr << "error: " << e.really_what() << "\n";
         return 1;
     }
-    catch (const p3::parser_error& e)
+    catch (const p4::parser_error& e)
     {
         std::cerr << "an error has occurred while parsing the input\n";
         std::cerr << "error: " << e.really_what() << "\n";
@@ -70,14 +70,14 @@ int main(int argc, char* argv[])
     auto tree = parser->get_tree();
 
     // Create analyzer for parse tree
-    p3::analyzer analyzer(tree);
+    p4::analyzer analyzer(tree);
 
     // Try to analyze the tree
     try
     {
         analyzer.run();
     }
-    catch (const p3::analyzer_error& e)
+    catch (const p4::analyzer_error& e)
     {
         std::cerr << "an error has occurred while analyzing the input\n";
         std::cerr << "error: " << e.really_what() << "\n";

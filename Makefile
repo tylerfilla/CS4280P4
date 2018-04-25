@@ -1,19 +1,19 @@
 #
 # Tyler Filla
 # CS 4280
-# Project 3
+# Project 4
 #
 
 LDFLAGS=
 CXXFLAGS=-std=c++11
 
 .PHONY: all
-all: tablegen statSem
+all: tablegen comp
 
 %.o: %.cpp
 	g++ $(CXXFLAGS) -o $@ -c $^
 
-statSem: main.o
+comp: main.o
 	g++ -o $@ $^ $(LDFLAGS)
 
 tablegen: tablegen.o
@@ -23,7 +23,7 @@ tablegen: tablegen.o
 .PHONY: clean
 clean:
 	rm -rf *.o
-	rm -f statSem
+	rm -f comp
 	rm -f tablegen
 
 .SECONDARY:

@@ -1,8 +1,8 @@
-Local
+Storage=Local
 
 Tyler Filla
 CS 4280
-Project 3
+Project 4
 
 Building
 ========
@@ -13,8 +13,6 @@ $ make
 Using
 =====
 
-$ ./statSem [basename]
+$ ./comp [basename]
 
 The usual invocation is supported.
-
-On successful semantic analysis, the program prints nothing.

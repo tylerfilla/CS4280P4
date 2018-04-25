@@ -1,7 +1,7 @@
 #
 # Tyler Filla
 # CS 4280
-# Project 3 - Table Description
+# Project 4 - Table Description
 #
 # This is a small file that lets me modify the scanner table with English,
 # rather than numbers. Writing this file and a parser for this file was a good

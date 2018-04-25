@@ -1,11 +1,11 @@
 /*
  * Tyler Filla
  * CS 4280
- * Project 3
+ * Project 4
  */
 
-#ifndef P3_PARSER_H
-#define P3_PARSER_H
+#ifndef P4_PARSER_H
+#define P4_PARSER_H
 
 #include <stdexcept>
 #include <string>
@@ -14,7 +14,7 @@
 #include "token.h"
 #include "tree.h"
 
-namespace p3
+namespace p4
 {
 
 /**
@@ -123,7 +123,7 @@ public:
 template<typename InputIteratorT>
 class parser
 {
-    using token_iterator = typename p3::scanner<InputIteratorT>::token_iterator;
+    using token_iterator = typename p4::scanner<InputIteratorT>::token_iterator;
 
     /**
      * An iterator to the current location in the input token stream.
@@ -311,7 +311,7 @@ class parser
         case TK_OP_SLASH:
             {
                 ++m_token_current;
-                auto node = new tree::node_expr_2_p3 {};
+                auto node = new tree::node_expr_2_p4 {};
                 node->nd_rhs = parse_expr();
                 // success
                 return node;
@@ -394,7 +394,7 @@ class parser
             }
         case TK_INTEGER:
             {
-                auto node = new tree::node_R_p3 {};
+                auto node = new tree::node_R_p4 {};
                 node->tk_integer = *m_token_current;
                 ++m_token_current;
                 // success
@@ -475,7 +475,7 @@ class parser
         case TK_KW_START:
             {
                 // unparsed nonterminal: do not consume token
-                auto node = new tree::node_stat_p3 {};
+                auto node = new tree::node_stat_p4 {};
                 node->nd_block = parse_block();
                 // success
                 return node;
@@ -720,7 +720,7 @@ class parser
         case TK_OP_EQ:
             {
                 ++m_token_current;
-                auto node = new tree::node_RO_p3 {};
+                auto node = new tree::node_RO_p4 {};
                 node->nd_eq = parse_RO_eq();
                 // success
                 return node;
@@ -831,6 +831,6 @@ public:
     }
 };
 
-} // namespace p3
+} // namespace p4
 
-#endif // #ifndef P3_PARSER_H
+#endif // #ifndef P4_PARSER_H
