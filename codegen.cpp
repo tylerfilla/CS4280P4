@@ -31,6 +31,9 @@ void p4::codegen::stage_1_traverse(tree::node* root)
     {
         stage_1_traverse(node->nd_vars);
         stage_1_traverse(node->nd_block);
+
+        // Code: Stop the program
+        m_gens.push_back(new gen_instr_stop);
     }
     else if (auto node = dynamic_cast<tree::node_block*>(root))
     {
@@ -189,9 +192,6 @@ void p4::codegen::stage_1_traverse(tree::node* root)
     else if (auto node = dynamic_cast<tree::node_RO_eq*>(root))
     {
     }
-
-    // Finish with stop instruction
-    m_gens.push_back(new gen_instr_stop);
 }
 
 void p4::codegen::do_stage_1()
