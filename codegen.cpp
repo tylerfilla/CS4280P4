@@ -17,123 +17,6 @@ p4::codegen::codegen()
 {
 }
 
-/*
-void p4::codegen::traverse(tree::node* root, std::function<void(tree::node*)> cb_pre, std::function<void(tree::node*)> cb_post)
-{
-    if (!root)
-        return;
-
-    // Call preorder callback
-    if (cb_pre)
-    {
-        cb_pre(root);
-    }
-
-    // Traverse node children
-    // This depends on the dynamic type of the node
-    if (auto node = dynamic_cast<tree::node_program*>(root))
-    {
-        traverse(node->nd_vars, cb_pre, cb_post);
-        traverse(node->nd_block, cb_pre, cb_post);
-    }
-    else if (auto node = dynamic_cast<tree::node_block*>(root))
-    {
-        traverse(node->nd_vars, cb_pre, cb_post);
-        traverse(node->nd_stats, cb_pre, cb_post);
-    }
-    else if (auto node = dynamic_cast<tree::node_vars*>(root))
-    {
-        traverse(node->nd_mvars, cb_pre, cb_post);
-    }
-    else if (auto node = dynamic_cast<tree::node_mvars_p1*>(root))
-    {
-    }
-    else if (auto node = dynamic_cast<tree::node_mvars_p2*>(root))
-    {
-        traverse(node->nd_mvars, cb_pre, cb_post);
-    }
-    else if (auto node = dynamic_cast<tree::node_expr*>(root))
-    {
-        traverse(node->nd_M, cb_pre, cb_post);
-        traverse(node->nd_expr_2, cb_pre, cb_post);
-    }
-    else if (auto node = dynamic_cast<tree::node_expr_2_p1*>(root))
-    {
-        traverse(node->nd_rhs, cb_pre, cb_post);
-    }
-    else if (auto node = dynamic_cast<tree::node_expr_2_p2*>(root))
-    {
-        traverse(node->nd_rhs, cb_pre, cb_post);
-    }
-    else if (auto node = dynamic_cast<tree::node_expr_2_p3*>(root))
-    {
-        traverse(node->nd_rhs, cb_pre, cb_post);
-    }
-    else if (auto node = dynamic_cast<tree::node_expr_2_p4*>(root))
-    {
-        traverse(node->nd_rhs, cb_pre, cb_post);
-    }
-    else if (auto node = dynamic_cast<tree::node_M_p1*>(root))
-    {
-        traverse(node->nd_M, cb_pre, cb_post);
-    }
-    else if (auto node = dynamic_cast<tree::node_M_p2*>(root))
-    {
-        traverse(node->nd_R, cb_pre, cb_post);
-    }
-    else if (auto node = dynamic_cast<tree::node_R_p1*>(root))
-    {
-        traverse(node->nd_expr, cb_pre, cb_post);
-    }
-    else if (auto node = dynamic_cast<tree::node_R_p2*>(root))
-    {
-    }
-    else if (auto node = dynamic_cast<tree::node_R_p3*>(root))
-    {
-    }
-    else if (auto node = dynamic_cast<tree::node_stats*>(root))
-    {
-        traverse(node->nd_stat, cb_pre, cb_post);
-        traverse(node->nd_mStat, cb_pre, cb_post);
-    }
-    else if (auto node = dynamic_cast<tree::node_mStat*>(root))
-    {
-        traverse(node->nd_stat, cb_pre, cb_post);
-        traverse(node->nd_mStat, cb_pre, cb_post);
-    }
-    else if (auto node = dynamic_cast<tree::node_stat_p1*>(root))
-    {
-        traverse(node->nd_in, cb_pre, cb_post);
-    }
-    else if (auto node = dynamic_cast<tree::node_stat_p2*>(root))
-    {
-        traverse(node->nd_out, cb_pre, cb_post);
-    }
-    else if (auto node = dynamic_cast<tree::node_stat_p3*>(root))
-    {
-        traverse(node->nd_block, cb_pre, cb_post);
-    }
-    else if (auto node = dynamic_cast<tree::node_stat_p4*>(root))
-    {
-        traverse(node->nd_if, cb_pre, cb_post);
-    }
-    else if (auto node = dynamic_cast<tree::node_stat_p5*>(root))
-    {
-        traverse(node->nd_loop, cb_pre, cb_post);
-    }
-    else if (auto node = dynamic_cast<tree::node_stat_p6*>(root))
-    {
-        traverse(node->nd_assign, cb_pre, cb_post);
-    }
-
-    // Call postorder callback
-    if (cb_post)
-    {
-        cb_post(root);
-    }
-}
-*/
-
 void p4::codegen::stage_1_traverse(tree::node* root)
 {
     //
@@ -146,42 +29,57 @@ void p4::codegen::stage_1_traverse(tree::node* root)
 
     if (auto node = dynamic_cast<tree::node_program*>(root))
     {
+        stage_1_traverse(node->nd_vars);
+        stage_1_traverse(node->nd_block);
     }
     else if (auto node = dynamic_cast<tree::node_block*>(root))
     {
+        stage_1_traverse(node->nd_vars);
+        stage_1_traverse(node->nd_stats);
     }
     else if (auto node = dynamic_cast<tree::node_vars*>(root))
     {
+        stage_1_traverse(node->nd_mvars);
     }
     else if (auto node = dynamic_cast<tree::node_mvars_p1*>(root))
     {
     }
     else if (auto node = dynamic_cast<tree::node_mvars_p2*>(root))
     {
+        stage_1_traverse(node->nd_mvars);
     }
     else if (auto node = dynamic_cast<tree::node_expr*>(root))
     {
+        stage_1_traverse(node->nd_M);
+        stage_1_traverse(node->nd_expr_2);
     }
     else if (auto node = dynamic_cast<tree::node_expr_2_p1*>(root))
     {
+        stage_1_traverse(node->nd_rhs);
     }
     else if (auto node = dynamic_cast<tree::node_expr_2_p2*>(root))
     {
+        stage_1_traverse(node->nd_rhs);
     }
     else if (auto node = dynamic_cast<tree::node_expr_2_p3*>(root))
     {
+        stage_1_traverse(node->nd_rhs);
     }
     else if (auto node = dynamic_cast<tree::node_expr_2_p4*>(root))
     {
+        stage_1_traverse(node->nd_rhs);
     }
     else if (auto node = dynamic_cast<tree::node_M_p1*>(root))
     {
+        stage_1_traverse(node->nd_M);
     }
     else if (auto node = dynamic_cast<tree::node_M_p2*>(root))
     {
+        stage_1_traverse(node->nd_R);
     }
     else if (auto node = dynamic_cast<tree::node_R_p1*>(root))
     {
+        stage_1_traverse(node->nd_expr);
     }
     else if (auto node = dynamic_cast<tree::node_R_p2*>(root))
     {
@@ -191,9 +89,13 @@ void p4::codegen::stage_1_traverse(tree::node* root)
     }
     else if (auto node = dynamic_cast<tree::node_stats*>(root))
     {
+        stage_1_traverse(node->nd_stat);
+        stage_1_traverse(node->nd_mStat);
     }
     else if (auto node = dynamic_cast<tree::node_mStat*>(root))
     {
+        stage_1_traverse(node->nd_stat);
+        stage_1_traverse(node->nd_mStat);
     }
     else if (auto node = dynamic_cast<tree::node_stat_p1*>(root))
     {
