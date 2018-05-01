@@ -23,12 +23,26 @@ namespace p4
 class codegen
 {
     /**
+     * An intermediate piece of generated code.
+     */
+    struct gen
+    {
+        virtual ~gen() = default;
+
+        virtual std::string get_desc() const
+        { return "<unknown>"; }
+    };
+
+    /**
      * An intermediate label reference.
      */
     struct label
     {
         /** The user-given name of the label. */
         std::string name;
+
+        /** The target generated code element. */
+        gen* target;
     };
 
     /**
@@ -41,13 +55,6 @@ class codegen
     };
 
     /**
-     * A generated code element.
-     */
-    struct gen
-    {
-    };
-
-    /**
      * A generated label declaration.
      */
     struct gen_decl_label : gen
@@ -57,6 +64,11 @@ class codegen
 
         /** The generated label name. */
         std::string name;
+
+        ~gen_decl_label() final = default;
+
+        std::string get_desc() const final
+        { return std::string("label: ") + name; }
     };
 
     /**
@@ -69,6 +81,227 @@ class codegen
 
         /** The generated variable name. */
         std::string name;
+
+        /** The initial value. */
+        int value;
+
+        ~gen_decl_var() final = default;
+
+        std::string get_desc() const final
+        { return std::string("var: ") + name; }
+    };
+
+    /**
+     * A generated BR instruction.
+     */
+    struct gen_instr_br : gen
+    {
+        /** The branch target. */
+        label* target;
+
+        ~gen_instr_br() final = default;
+
+        std::string get_desc() const final
+        { return "br"; }
+    };
+
+    /**
+     * A generated BRNEG instruction.
+     */
+    struct gen_instr_brneg : gen
+    {
+        /** The branch target. */
+        label* target;
+
+        ~gen_instr_brneg() final = default;
+
+        std::string get_desc() const final
+        { return "brneg"; }
+    };
+
+    /**
+     * A generated BRZNEG instruction.
+     */
+    struct gen_instr_brzneg : gen
+    {
+        /** The branch target. */
+        label* target;
+
+        ~gen_instr_brzneg() final = default;
+
+        std::string get_desc() const final
+        { return "brzneg"; }
+    };
+
+    /**
+     * A generated BRPOS instruction.
+     */
+    struct gen_instr_brpos : gen
+    {
+        /** The branch target. */
+        label* target;
+
+        ~gen_instr_brpos() final = default;
+
+        std::string get_desc() const final
+        { return "brpos"; }
+    };
+
+    /**
+     * A generated BRZPOS instruction.
+     */
+    struct gen_instr_brzpos : gen
+    {
+        /** The branch target. */
+        label* target;
+
+        ~gen_instr_brzpos() final = default;
+
+        std::string get_desc() const final
+        { return "brzpos"; }
+    };
+
+    /**
+     * A generated BRZERO instruction.
+     */
+    struct gen_instr_brzero : gen
+    {
+        /** The branch target. */
+        label* target;
+
+        ~gen_instr_brzero() final = default;
+
+        std::string get_desc() const final
+        { return "brzero"; }
+    };
+
+    /**
+     * A generated COPY instruction.
+     */
+    struct gen_instr_copy : gen
+    {
+        /** The source variable. */
+        var* src;
+
+        /** The destination variable. */
+        var* dest;
+
+        ~gen_instr_copy() final = default;
+
+        std::string get_desc() const final
+        { return "copy"; }
+    };
+
+    /**
+     * A generated variable ADD instruction.
+     */
+    struct gen_instr_add_var : gen
+    {
+        /** The operand variable. */
+        var* rhs;
+
+        ~gen_instr_add_var() final = default;
+
+        std::string get_desc() const final
+        { return "variable add"; }
+    };
+
+    /**
+     * A generated immediate ADD instruction.
+     */
+    struct gen_instr_add_imm : gen
+    {
+        /** The immediate operand value. */
+        int rhs;
+
+        ~gen_instr_add_imm() final = default;
+
+        std::string get_desc() const final
+        { return "immediate add"; }
+    };
+
+    /**
+     * A generated variable SUB instruction.
+     */
+    struct gen_instr_sub_var : gen
+    {
+        /** The operand variable. */
+        var* rhs;
+
+        ~gen_instr_sub_var() final = default;
+
+        std::string get_desc() const final
+        { return "variable sub"; }
+    };
+
+    /**
+     * A generated immediate SUB instruction.
+     */
+    struct gen_instr_sub_imm : gen
+    {
+        /** The immediate operand value. */
+        int rhs;
+
+        ~gen_instr_sub_imm() final = default;
+
+        std::string get_desc() const final
+        { return "immediate sub"; }
+    };
+
+    /**
+     * A generated variable DIV instruction.
+     */
+    struct gen_instr_div_var : gen
+    {
+        /** The operand variable. */
+        var* rhs;
+
+        ~gen_instr_div_var() final = default;
+
+        std::string get_desc() const final
+        { return "variable div"; }
+    };
+
+    /**
+     * A generated immediate DIV instruction.
+     */
+    struct gen_instr_div_imm : gen
+    {
+        /** The immediate operand value. */
+        int rhs;
+
+        ~gen_instr_div_imm() final = default;
+
+        std::string get_desc() const final
+        { return "immediate div"; }
+    };
+
+    /**
+     * A generated variable MULT instruction.
+     */
+    struct gen_instr_mult_var : gen
+    {
+        /** The operand variable. */
+        var* rhs;
+
+        ~gen_instr_mult_var() final = default;
+
+        std::string get_desc() const final
+        { return "variable mult"; }
+    };
+
+    /**
+     * A generated immediate MULT instruction.
+     */
+    struct gen_instr_mult_imm : gen
+    {
+        /** The immediate operand value. */
+        int rhs;
+
+        ~gen_instr_mult_imm() final = default;
+
+        std::string get_desc() const final
+        { return "immediate mult"; }
     };
 
     /**
@@ -78,6 +311,11 @@ class codegen
     {
         /** The destination variable. */
         var* dest;
+
+        ~gen_instr_read() final = default;
+
+        std::string get_desc() const final
+        { return "read"; }
     };
 
     /**
@@ -87,6 +325,11 @@ class codegen
     {
         /** The source variable. */
         var* src;
+
+        ~gen_instr_write_var() final = default;
+
+        std::string get_desc() const final
+        { return "write variable"; }
     };
 
     /**
@@ -96,13 +339,22 @@ class codegen
     {
         /** The immediate value. */
         int value;
+
+        ~gen_instr_write_imm() final = default;
+
+        std::string get_desc() const final
+        { return "write immediate"; }
     };
 
     /**
      * A generated STOP instruction.
      */
-    struct gen_instr_stop : gen
+    struct gen_instr_stop : virtual gen
     {
+        ~gen_instr_stop() final = default;
+
+        std::string get_desc() const final
+        { return "stop"; }
     };
 
     /**
@@ -112,6 +364,114 @@ class codegen
     {
         /** The destination variable. */
         var* dest;
+
+        ~gen_instr_store() final = default;
+
+        std::string get_desc() const final
+        { return "store"; }
+    };
+
+    /**
+     * A generated variable LOAD instruction.
+     */
+    struct gen_instr_load_var : gen
+    {
+        /** The source variable. */
+        var* src;
+
+        ~gen_instr_load_var() final = default;
+
+        std::string get_desc() const final
+        { return "variable load"; }
+    };
+
+    /**
+     * A generated immediate LOAD instruction.
+     */
+    struct gen_instr_load_imm : gen
+    {
+        /** The immediate value. */
+        int value;
+
+        ~gen_instr_load_imm() final = default;
+
+        std::string get_desc() const final
+        { return "immediate load"; }
+    };
+
+    /**
+     * A generated NOOP instruction.
+     */
+    struct gen_instr_noop : gen
+    {
+        ~gen_instr_noop() final = default;
+
+        std::string get_desc() const final
+        { return "noop"; }
+    };
+
+    /**
+     * A generated PUSH instruction.
+     */
+    struct gen_instr_push : gen
+    {
+        ~gen_instr_push() final = default;
+
+        std::string get_desc() const final
+        { return "push"; }
+    };
+
+    /**
+     * A generated POP instruction.
+     */
+    struct gen_instr_pop : gen
+    {
+        ~gen_instr_pop() final = default;
+
+        std::string get_desc() const final
+        { return "pop"; }
+    };
+
+    /**
+     * A generated STACKW instruction.
+     */
+    struct gen_instr_stackw : gen
+    {
+        /** The stack offset. */
+        int offset;
+
+        ~gen_instr_stackw() final = default;
+
+        std::string get_desc() const final
+        { return std::string("stackw"); }
+    };
+
+    /**
+     * A generated STACKR instruction.
+     */
+    struct gen_instr_stackr : gen
+    {
+        /** The stack offset. */
+        int offset;
+
+        ~gen_instr_stackr() final = default;
+
+        std::string get_desc() const final
+        { return std::string("stackr"); }
+    };
+
+    /**
+     * A relational operator type.
+     */
+    enum class ro_type
+    {
+        NONE = 0,
+        LT,
+        LTE,
+        GT,
+        GTE,
+        EQ,
+        NEQ,
     };
 
     /** The parse tree. */
@@ -131,6 +491,9 @@ class codegen
 
     /** Intermediate generated code fragments. */
     std::vector<gen*> m_gens;
+
+    /** Intermediate relational operator type. */
+    ro_type m_ro_type;
 
 public:
     codegen();
