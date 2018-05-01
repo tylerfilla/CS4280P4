@@ -11,6 +11,7 @@
 #include <string>
 
 #include "analyzer.h"
+#include "codegen.h"
 #include "parser.h"
 #include "scanner.h"
 #include "token.h"
@@ -83,6 +84,23 @@ int main(int argc, char* argv[])
         std::cerr << "error: " << e.really_what() << "\n";
         return 1;
     }
+
+    // Configure code generator
+    p4::codegen codegen;
+    codegen.set_tree(tree);
+
+    try
+    {
+        codegen.run();
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "an error has occurred: " << e.what() << "\n";
+        return 1;
+    }
+
+    // FIXME
+    std::cout << codegen.get_output() << "\n";
 
     return 0;
 }

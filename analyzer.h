@@ -263,7 +263,7 @@ private:
         {
             analyze(node->nd_rhs);
         }
-        else if (auto node = dynamic_cast<tree::node_expr_2_p4*>(p_node))
+        else if (auto node = dynamic_cast<tree::node_expr_2_p3*>(p_node))
         {
             analyze(node->nd_rhs);
         }
@@ -290,7 +290,7 @@ private:
             if (!find_variable(name))
                 throw analyzer_undefined_variable_error(name);
         }
-        else if (auto node = dynamic_cast<tree::node_R_p4*>(p_node))
+        else if (auto node = dynamic_cast<tree::node_R_p3*>(p_node))
         {
         }
         else if (auto node = dynamic_cast<tree::node_stats*>(p_node))
@@ -311,7 +311,7 @@ private:
         {
             analyze(node->nd_out);
         }
-        else if (auto node = dynamic_cast<tree::node_stat_p4*>(p_node))
+        else if (auto node = dynamic_cast<tree::node_stat_p3*>(p_node))
         {
             analyze(node->nd_block);
         }
@@ -365,7 +365,7 @@ private:
         {
             analyze(node->nd_gt);
         }
-        else if (auto node = dynamic_cast<tree::node_RO_p4*>(p_node))
+        else if (auto node = dynamic_cast<tree::node_RO_p3*>(p_node))
         {
             analyze(node->nd_eq);
         }

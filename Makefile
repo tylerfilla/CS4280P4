@@ -5,7 +5,7 @@
 #
 
 LDFLAGS=
-CXXFLAGS=-std=c++11
+CXXFLAGS=-std=c++11 -g
 
 .PHONY: all
 all: tablegen comp
@@ -13,7 +13,7 @@ all: tablegen comp
 %.o: %.cpp
 	g++ $(CXXFLAGS) -o $@ -c $^
 
-comp: main.o
+comp: main.o tree.o codegen.o
 	g++ -o $@ $^ $(LDFLAGS)
 
 tablegen: tablegen.o

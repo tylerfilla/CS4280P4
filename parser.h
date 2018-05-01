@@ -311,7 +311,7 @@ class parser
         case TK_OP_SLASH:
             {
                 ++m_token_current;
-                auto node = new tree::node_expr_2_p4 {};
+                auto node = new tree::node_expr_2_p3 {};
                 node->nd_rhs = parse_expr();
                 // success
                 return node;
@@ -394,7 +394,7 @@ class parser
             }
         case TK_INTEGER:
             {
-                auto node = new tree::node_R_p4 {};
+                auto node = new tree::node_R_p3 {};
                 node->tk_integer = *m_token_current;
                 ++m_token_current;
                 // success
@@ -475,7 +475,7 @@ class parser
         case TK_KW_START:
             {
                 // unparsed nonterminal: do not consume token
-                auto node = new tree::node_stat_p4 {};
+                auto node = new tree::node_stat_p3 {};
                 node->nd_block = parse_block();
                 // success
                 return node;
@@ -720,7 +720,7 @@ class parser
         case TK_OP_EQ:
             {
                 ++m_token_current;
-                auto node = new tree::node_RO_p4 {};
+                auto node = new tree::node_RO_p3 {};
                 node->nd_eq = parse_RO_eq();
                 // success
                 return node;

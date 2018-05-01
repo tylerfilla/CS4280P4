@@ -27,7 +27,7 @@ struct node_expr;
 struct node_expr_2;
 struct node_expr_2_p1;
 struct node_expr_2_p2;
-struct node_expr_2_p4;
+struct node_expr_2_p3;
 struct node_expr_2_p4;
 struct node_M;
 struct node_M_p1;
@@ -35,13 +35,13 @@ struct node_M_p2;
 struct node_R;
 struct node_R_p1;
 struct node_R_p2;
-struct node_R_p4;
+struct node_R_p3;
 struct node_stats;
 struct node_mStat;
 struct node_stat;
 struct node_stat_p1;
 struct node_stat_p2;
-struct node_stat_p4;
+struct node_stat_p3;
 struct node_stat_p4;
 struct node_stat_p5;
 struct node_stat_p6;
@@ -53,7 +53,7 @@ struct node_assign;
 struct node_RO;
 struct node_RO_p1;
 struct node_RO_p2;
-struct node_RO_p4;
+struct node_RO_p3;
 struct node_RO_lt;
 struct node_RO_gt;
 struct node_RO_eq;
@@ -265,12 +265,12 @@ struct node_expr_2_p2 : node_expr_2
  * Tokens: none
  * Children: 2
  */
-struct node_expr_2_p4 : node_expr_2
+struct node_expr_2_p3 : node_expr_2
 {
     /** Item 2. */
     node_expr* nd_rhs;
 
-    ~node_expr_2_p4() final;
+    ~node_expr_2_p3() final;
 
     std::string get_name() const final
     { return "expr_2"; }
@@ -399,12 +399,12 @@ struct node_R_p2 : node_R
  * Children: none
  * Terminal.
  */
-struct node_R_p4 : node_R
+struct node_R_p3 : node_R
 {
     /** Item 1. */
     token tk_integer;
 
-    ~node_R_p4() final = default;
+    ~node_R_p3() final = default;
 
     std::string get_name() const final
     { return "R"; }
@@ -510,12 +510,12 @@ struct node_stat_p2 : node_stat
  * Tokens: none
  * Children: 1
  */
-struct node_stat_p4 : node_stat
+struct node_stat_p3 : node_stat
 {
     /** Item 1. */
     node_block* nd_block;
 
-    ~node_stat_p4() final;
+    ~node_stat_p3() final;
 
     std::string get_name() const final
     { return "stat"; }
@@ -750,12 +750,12 @@ struct node_RO_p2 : node_RO
  * Tokens: none
  * Children: 2
  */
-struct node_RO_p4 : node_RO
+struct node_RO_p3 : node_RO
 {
     /** Item 2. */
     node_RO_eq* nd_eq;
 
-    ~node_RO_p4() final;
+    ~node_RO_p3() final;
 
     std::string get_name() const final
     { return "RO"; }
@@ -817,152 +817,6 @@ struct node_RO_eq : node
     std::string get_prod() const final
     { return "<RO_eq>"; }
 };
-
-node_program::~node_program()
-{
-    delete nd_vars;
-    delete nd_block;
-}
-
-node_block::~node_block()
-{
-    delete nd_vars;
-    delete nd_stats;
-}
-
-node_vars::~node_vars()
-{
-    delete nd_mvars;
-}
-
-node_mvars_p2::~node_mvars_p2()
-{
-    delete nd_mvars;
-}
-
-node_expr::~node_expr()
-{
-    delete nd_M;
-    delete nd_expr_2;
-}
-
-node_expr_2_p1::~node_expr_2_p1()
-{
-    delete nd_rhs;
-}
-
-node_expr_2_p2::~node_expr_2_p2()
-{
-    delete nd_rhs;
-}
-
-node_expr_2_p4::~node_expr_2_p4()
-{
-    delete nd_rhs;
-}
-
-node_expr_2_p4::~node_expr_2_p4()
-{
-    delete nd_rhs;
-}
-
-node_M_p1::~node_M_p1()
-{
-    delete nd_M;
-}
-
-node_M_p2::~node_M_p2()
-{
-    delete nd_R;
-}
-
-node_R_p1::~node_R_p1()
-{
-    delete nd_expr;
-}
-
-node_stats::~node_stats()
-{
-    delete nd_stat;
-    delete nd_mStat;
-}
-
-node_mStat::~node_mStat()
-{
-    delete nd_stat;
-    delete nd_mStat;
-}
-
-node_stat_p1::~node_stat_p1()
-{
-    delete nd_in;
-}
-
-node_stat_p2::~node_stat_p2()
-{
-    delete nd_out;
-}
-
-node_stat_p4::~node_stat_p4()
-{
-    delete nd_block;
-}
-
-node_stat_p4::~node_stat_p4()
-{
-    delete nd_if;
-}
-
-node_stat_p5::~node_stat_p5()
-{
-    delete nd_loop;
-}
-
-node_stat_p6::~node_stat_p6()
-{
-    delete nd_assign;
-}
-
-node_out::~node_out()
-{
-    delete nd_expr;
-}
-
-node_if::~node_if()
-{
-    delete nd_lhs;
-    delete nd_operator;
-    delete nd_rhs;
-    delete nd_body;
-}
-
-node_loop::~node_loop()
-{
-    delete nd_lhs;
-    delete nd_operator;
-    delete nd_rhs;
-    delete nd_body;
-}
-
-node_assign::~node_assign()
-{
-    delete nd_value;
-}
-
-node_RO_p1::~node_RO_p1()
-{
-    delete nd_lt;
-}
-
-node_RO_p2::~node_RO_p2()
-{
-    delete nd_gt;
-}
-
-node_RO_p4::~node_RO_p4()
-{
-    delete nd_eq;
-}
 
 } // namespace tree
 
