@@ -23,7 +23,7 @@ namespace p4
 class codegen
 {
     /**
-     * A label object.
+     * An intermediate label reference.
      */
     struct label
     {
@@ -32,7 +32,7 @@ class codegen
     };
 
     /**
-     * A variable object.
+     * An intermediate variable reference.
      */
     struct var
     {
@@ -71,6 +71,49 @@ class codegen
         std::string name;
     };
 
+    /**
+     * A generated READ instruction.
+     */
+    struct gen_instr_read : gen
+    {
+        /** The destination variable. */
+        var* dest;
+    };
+
+    /**
+     * A generated variable WRITE instruction.
+     */
+    struct gen_instr_write_var : gen
+    {
+        /** The source variable. */
+        var* src;
+    };
+
+    /**
+     * A generated immediate WRITE instruction.
+     */
+    struct gen_instr_write_imm : gen
+    {
+        /** The immediate value. */
+        int value;
+    };
+
+    /**
+     * A generated STOP instruction.
+     */
+    struct gen_instr_stop : gen
+    {
+    };
+
+    /**
+     * A generated STORE instruction.
+     */
+    struct gen_instr_store : gen
+    {
+        /** The destination variable. */
+        var* dest;
+    };
+
     /** The parse tree. */
     tree::node* m_tree;
 
@@ -80,13 +123,13 @@ class codegen
     /** Incomplete generated output. */
     std::ostringstream m_output_ss;
 
-    /** Intermediate label objects. */
+    /** Intermediate label references. */
     std::vector<label*> m_labels;
 
-    /** Intermediate variable objects. */
+    /** Intermediate variable references. */
     std::vector<var*> m_vars;
 
-    /** Intermediate generated pieces of code. */
+    /** Intermediate generated code fragments. */
     std::vector<gen*> m_gens;
 
 public:
@@ -100,29 +143,25 @@ public:
 
 private:
     /**
-     * Do a parse tree traversal with preorder and postorder callbacks.
-     *
+     * Traverse the parse tree as part of stage 1.
      * @param root The traversal root
-     * @param cb_pre The preorder callback
-     * @param cb_post The postorder callback
      */
-    void traverse(tree::node* root, std::function<void(tree::node*)> cb_pre, std::function<void(tree::node*)> cb_post);
+    void stage_1_traverse(tree::node* root);
 
     /**
-     * Do first pass. This generates instructions and prescribes temporary
-     * variables, but leaves variable and label references alone.
+     * Do first stage. This generates instructions.
      */
-    void do_pass_1();
+    void do_stage_1();
 
     /**
-     * Do second pass. This processes variable references.
+     * Do second stage. This processes variable references.
      */
-    void do_pass_2();
+    void do_stage_2();
 
     /**
-     * Do third pass. This processes label references.
+     * Do third stage. This processes label references.
      */
-    void do_pass_3();
+    void do_stage_3();
 
     /**
      * Compose the final generated code string.
