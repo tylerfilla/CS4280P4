@@ -4,9 +4,7 @@
  * Project 4
  */
 
-#include <typeinfo>
 #include <utility>
-
 #include "codegen.h"
 
 p4::codegen::codegen()
@@ -32,18 +30,25 @@ void p4::codegen::stage_1_traverse(tree::node* root)
     }
     else if (auto node = dynamic_cast<tree::node_block*>(root))
     {
+        // Passthrough
         stage_1_traverse(node->nd_vars);
         stage_1_traverse(node->nd_stats);
     }
     else if (auto node = dynamic_cast<tree::node_vars*>(root))
     {
+        node->tk_name;
+        node->tk_value;
+
         stage_1_traverse(node->nd_mvars);
     }
     else if (auto node = dynamic_cast<tree::node_mvars_p1*>(root))
     {
+        // Empty
     }
     else if (auto node = dynamic_cast<tree::node_mvars_p2*>(root))
     {
+        node->tk_identifier;
+
         stage_1_traverse(node->nd_mvars);
     }
     else if (auto node = dynamic_cast<tree::node_expr*>(root))
@@ -53,70 +58,236 @@ void p4::codegen::stage_1_traverse(tree::node* root)
     }
     else if (auto node = dynamic_cast<tree::node_expr_2_p1*>(root))
     {
+        // Temporary variable
+        auto tmp_lhs = new var {};
+        tmp_lhs->name = "";
+
+        // Code: Store lhs (acc) to lhs (tmp_lhs)
+        {
+            auto instr = new gen_instr_store {};
+            instr->dest = tmp_lhs;
+            m_gens.push_back(instr);
+        }
+
+        // Call rhs
         stage_1_traverse(node->nd_rhs);
+
+        // Code: Add rhs (acc) by lhs (tmp_lhs)
+        {
+            auto instr = new gen_instr_add_var {};
+            instr->rhs = tmp_lhs;
+            m_gens.push_back(instr);
+        }
     }
     else if (auto node = dynamic_cast<tree::node_expr_2_p2*>(root))
     {
+        // Code: Reserve stack space
+        {
+            auto instr = new gen_instr_push {};
+            m_gens.push_back(instr);
+        }
+
+        // Code: Copy lhs (acc) to stack
+        {
+            auto instr = new gen_instr_stackw {};
+            instr->offset = 0;
+            m_gens.push_back(instr);
+        }
+
+        // Call rhs
         stage_1_traverse(node->nd_rhs);
+
+        // Temporary variable
+        auto tmp_rhs = new var {};
+        tmp_rhs->name = "";
+
+        // Code: Store rhs (acc) to rhs (tmp_rhs)
+        {
+            auto instr = new gen_instr_store {};
+            instr->dest = tmp_rhs;
+            m_gens.push_back(instr);
+        }
+
+        // Code: Load lhs (stack 0) to lhs (acc)
+        {
+            auto instr = new gen_instr_stackr {};
+            m_gens.push_back(instr);
+        }
+
+        // Code: Subtract lhs (acc) by rhs (tmp_rhs)
+        {
+            auto instr = new gen_instr_sub_var {};
+            instr->rhs = tmp_rhs;
+            m_gens.push_back(instr);
+        }
+
+        // Code: Free stack space
+        {
+            auto instr = new gen_instr_pop {};
+            m_gens.push_back(instr);
+        }
     }
     else if (auto node = dynamic_cast<tree::node_expr_2_p3*>(root))
     {
+        // Code: Reserve stack space
+        {
+            auto instr = new gen_instr_push {};
+            m_gens.push_back(instr);
+        }
+
+        // Code: Copy lhs (acc) to stack
+        {
+            auto instr = new gen_instr_stackw {};
+            instr->offset = 0;
+            m_gens.push_back(instr);
+        }
+
+        // Call rhs
         stage_1_traverse(node->nd_rhs);
+
+        // Temporary variable
+        auto tmp_rhs = new var {};
+        tmp_rhs->name = "";
+
+        // Code: Store rhs (acc) to rhs (tmp_rhs)
+        {
+            auto instr = new gen_instr_store {};
+            instr->dest = tmp_rhs;
+            m_gens.push_back(instr);
+        }
+
+        // Code: Load lhs (stack 0) to lhs (acc)
+        {
+            auto instr = new gen_instr_stackr {};
+            m_gens.push_back(instr);
+        }
+
+        // Code: Divide lhs (acc) by rhs (tmp_rhs)
+        {
+            auto instr = new gen_instr_div_var {};
+            instr->rhs = tmp_rhs;
+            m_gens.push_back(instr);
+        }
+
+        // Code: Free stack space
+        {
+            auto instr = new gen_instr_pop {};
+            m_gens.push_back(instr);
+        }
     }
     else if (auto node = dynamic_cast<tree::node_expr_2_p4*>(root))
     {
+        // Temporary variable
+        auto tmp_lhs = new var {};
+        tmp_lhs->name = "";
+
+        // Code: Store lhs (acc) to lhs (tmp_lhs)
+        {
+            auto instr = new gen_instr_store {};
+            instr->dest = tmp_lhs;
+            m_gens.push_back(instr);
+        }
+
+        // Call rhs
         stage_1_traverse(node->nd_rhs);
+
+        // Code: Multiply rhs (acc) by lhs (tmp_lhs)
+        {
+            auto instr = new gen_instr_mult_var {};
+            instr->rhs = tmp_lhs;
+            m_gens.push_back(instr);
+        }
     }
     else if (auto node = dynamic_cast<tree::node_M_p1*>(root))
     {
+        // Call M
         stage_1_traverse(node->nd_M);
+
+        // Code: Multiply by -1
+        {
+            auto instr = new gen_instr_mult_imm {};
+            instr->rhs = -1;
+            m_gens.push_back(instr);
+        }
     }
     else if (auto node = dynamic_cast<tree::node_M_p2*>(root))
     {
+        // Passthrough
         stage_1_traverse(node->nd_R);
     }
     else if (auto node = dynamic_cast<tree::node_R_p1*>(root))
     {
+        // Passthrough
         stage_1_traverse(node->nd_expr);
     }
     else if (auto node = dynamic_cast<tree::node_R_p2*>(root))
     {
+        // Variable
+        auto ref = new var {};
+        ref->name = node->tk_identifier.content;
+
+        // Code: Load value (ref)
+        {
+            auto instr = new gen_instr_load_var {};
+            instr->src = ref;
+            m_gens.push_back(instr);
+        }
     }
     else if (auto node = dynamic_cast<tree::node_R_p3*>(root))
     {
+        int value = 0;
+
+        std::stringstream ss {};
+        ss << node->tk_integer.content;
+        ss >> value;
+
+        // Code: Load value (immediate)
+        {
+            auto instr = new gen_instr_load_imm {};
+            instr->value = value;
+            m_gens.push_back(instr);
+        }
     }
     else if (auto node = dynamic_cast<tree::node_stats*>(root))
     {
+        // Passthrough
         stage_1_traverse(node->nd_stat);
         stage_1_traverse(node->nd_mStat);
     }
     else if (auto node = dynamic_cast<tree::node_mStat*>(root))
     {
+        // Passthrough
         stage_1_traverse(node->nd_stat);
         stage_1_traverse(node->nd_mStat);
     }
     else if (auto node = dynamic_cast<tree::node_stat_p1*>(root))
     {
+        // Passthrough
         stage_1_traverse(node->nd_in);
     }
     else if (auto node = dynamic_cast<tree::node_stat_p2*>(root))
     {
+        // Passthrough
         stage_1_traverse(node->nd_out);
     }
     else if (auto node = dynamic_cast<tree::node_stat_p3*>(root))
     {
+        // Passthrough
         stage_1_traverse(node->nd_block);
     }
     else if (auto node = dynamic_cast<tree::node_stat_p4*>(root))
     {
+        // Passthrough
         stage_1_traverse(node->nd_if);
     }
     else if (auto node = dynamic_cast<tree::node_stat_p5*>(root))
     {
+        // Passthrough
         stage_1_traverse(node->nd_loop);
     }
     else if (auto node = dynamic_cast<tree::node_stat_p6*>(root))
     {
+        // Passthrough
         stage_1_traverse(node->nd_assign);
     }
     else if (auto node = dynamic_cast<tree::node_in*>(root))
@@ -140,7 +311,7 @@ void p4::codegen::stage_1_traverse(tree::node* root)
         auto tmp = new var {};
         tmp->name = "";
 
-        // Code: Store ACC into temporary
+        // Code: Store value (acc) into temporary
         {
             auto instr = new gen_instr_store {};
             instr->dest = tmp;
@@ -156,21 +327,21 @@ void p4::codegen::stage_1_traverse(tree::node* root)
     }
     else if (auto node = dynamic_cast<tree::node_if*>(root))
     {
-        // Call rhs, return to acc
+        // Call rhs
         stage_1_traverse(node->nd_rhs);
 
         // Temporary variable
         auto tmp = new var {};
         tmp->name = "";
 
-        // Code: Store rhs (acc) to tmp
+        // Code: Store rhs (acc) to rhs (tmp)
         {
             auto instr = new gen_instr_store {};
             instr->dest = tmp;
             m_gens.push_back(instr);
         }
 
-        // Call lhs, return to acc
+        // Call lhs
         stage_1_traverse(node->nd_lhs);
 
         // Code: Subtract rhs (tmp) from lhs (acc)
@@ -180,7 +351,7 @@ void p4::codegen::stage_1_traverse(tree::node* root)
             m_gens.push_back(instr);
         }
 
-        // Examine operator
+        // Call operator
         stage_1_traverse(node->nd_operator);
 
         // Jump label
@@ -194,8 +365,8 @@ void p4::codegen::stage_1_traverse(tree::node* root)
             {
                 // OP: Less than
 
-                // Code: Jump if diff > 0
-                auto instr = new gen_instr_brpos {};
+                // Code: Jump if diff >= 0
+                auto instr = new gen_instr_brzpos {};
                 instr->target = jmp;
                 m_gens.push_back(instr);
             }
@@ -204,8 +375,8 @@ void p4::codegen::stage_1_traverse(tree::node* root)
             {
                 // OP: Less than or equal to
 
-                // Code: Jump if diff >= 0
-                auto instr = new gen_instr_brzpos {};
+                // Code: Jump if diff > 0
+                auto instr = new gen_instr_brpos {};
                 instr->target = jmp;
                 m_gens.push_back(instr);
             }
@@ -214,8 +385,8 @@ void p4::codegen::stage_1_traverse(tree::node* root)
             {
                 // OP: Greater than
 
-                // Code: Jump if diff < 0
-                auto instr = new gen_instr_brneg {};
+                // Code: Jump if diff <= 0
+                auto instr = new gen_instr_brzneg {};
                 instr->target = jmp;
                 m_gens.push_back(instr);
             }
@@ -224,8 +395,8 @@ void p4::codegen::stage_1_traverse(tree::node* root)
             {
                 // OP: Greater than or equal to
 
-                // Code: Jump if diff <= 0
-                auto instr = new gen_instr_brzneg {};
+                // Code: Jump if diff < 0
+                auto instr = new gen_instr_brneg {};
                 instr->target = jmp;
                 m_gens.push_back(instr);
             }
@@ -264,16 +435,13 @@ void p4::codegen::stage_1_traverse(tree::node* root)
         // Reset operator type
         m_ro_type = ro_type::NONE;
 
-        // Call body
+        // Call body block
         stage_1_traverse(node->nd_body);
 
-        // Code: No operation
-        // This is strictly an anchor for the jump
+        // Code: No operation (branch target)
         {
             auto instr = new gen_instr_noop {};
             m_gens.push_back(instr);
-
-            // Anchor the jump label to the NOOP instruction
             jmp->target = instr;
         }
     }
@@ -283,10 +451,23 @@ void p4::codegen::stage_1_traverse(tree::node* root)
     }
     else if (auto node = dynamic_cast<tree::node_assign*>(root))
     {
+        // Call value
         stage_1_traverse(node->nd_value);
+
+        // Variable
+        auto ref = new var {};
+        ref->name = node->tk_name.content;
+
+        // Code: Store value (acc) to variable (ref)
+        {
+            auto instr = new gen_instr_store {};
+            instr->dest = ref;
+            m_gens.push_back(instr);
+        }
     }
     else if (auto node = dynamic_cast<tree::node_RO_p1*>(root))
     {
+        // Call optional second <
         stage_1_traverse(node->nd_lt);
 
         // If not "less than or equal to", it's just "less than"
@@ -297,6 +478,7 @@ void p4::codegen::stage_1_traverse(tree::node* root)
     }
     else if (auto node = dynamic_cast<tree::node_RO_p2*>(root))
     {
+        // Call optional second >
         stage_1_traverse(node->nd_gt);
 
         // If not "greater than or equal to", it's just "greater than"
@@ -307,6 +489,7 @@ void p4::codegen::stage_1_traverse(tree::node* root)
     }
     else if (auto node = dynamic_cast<tree::node_RO_p3*>(root))
     {
+        // Call optional second =
         stage_1_traverse(node->nd_eq);
 
         // If not "not equal to", it's just "equal to"
@@ -336,13 +519,14 @@ void p4::codegen::do_stage_1()
 {
     //
     // Stage 1: Roughly sketch the program
-    //   * Produces a sequence of gen*'s outlining the final code
+    //   * Produces a sequence of objects outlining the final code
     //   * No storage allocation is performed
     //       - Variable references are kept as strings
     //       - Temporary variables are named "" (empty string)
+    //   * The parse tree only needs to be traversed once
     //
 
-    // Generate instructions from parse tree
+    // Perform traversal
     stage_1_traverse(m_tree);
 }
 
@@ -413,7 +597,7 @@ void p4::codegen::compose()
         }
         else if (auto g = dynamic_cast<gen_instr_add_imm*>(gen_i))
         {
-            m_output_ss << "ADD <immediate>\n";
+            m_output_ss << "ADD " << g->rhs << "\n";
         }
         else if (auto g = dynamic_cast<gen_instr_sub_var*>(gen_i))
         {
@@ -421,7 +605,7 @@ void p4::codegen::compose()
         }
         else if (auto g = dynamic_cast<gen_instr_sub_imm*>(gen_i))
         {
-            m_output_ss << "SUB <immediate>\n";
+            m_output_ss << "SUB " << g->rhs << "\n";
         }
         else if (auto g = dynamic_cast<gen_instr_div_var*>(gen_i))
         {
@@ -429,15 +613,15 @@ void p4::codegen::compose()
         }
         else if (auto g = dynamic_cast<gen_instr_div_imm*>(gen_i))
         {
-            m_output_ss << "DIV <immediate>\n";
+            m_output_ss << "DIV " << g->rhs << "\n";
         }
         else if (auto g = dynamic_cast<gen_instr_mult_var*>(gen_i))
         {
             m_output_ss << "MULT <var>\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_mult_imm*>(gen_i))
+        else if (auto g = dynamic_cast<gen_instr_mult_imm *>(gen_i))
         {
-            m_output_ss << "MULT <immediate>\n";
+            m_output_ss << "MULT " << g->rhs << "\n";
         }
         else if (auto g = dynamic_cast<gen_instr_read*>(gen_i))
         {
@@ -449,7 +633,7 @@ void p4::codegen::compose()
         }
         else if (auto g = dynamic_cast<gen_instr_write_imm*>(gen_i))
         {
-            m_output_ss << "WRITE <immediate>\n";
+            m_output_ss << "WRITE " << g->value << "\n";
         }
         else if (auto g = dynamic_cast<gen_instr_stop*>(gen_i))
         {
@@ -465,7 +649,7 @@ void p4::codegen::compose()
         }
         else if (auto g = dynamic_cast<gen_instr_load_imm*>(gen_i))
         {
-            m_output_ss << "LOAD <immediate>\n";
+            m_output_ss << "LOAD " << g->value << "\n";
         }
         else if (auto g = dynamic_cast<gen_instr_noop*>(gen_i))
         {
@@ -481,11 +665,11 @@ void p4::codegen::compose()
         }
         else if (auto g = dynamic_cast<gen_instr_stackw*>(gen_i))
         {
-            m_output_ss << "STACKW <offset>";
+            m_output_ss << "STACKW " << g->offset << "\n";
         }
         else if (auto g = dynamic_cast<gen_instr_stackr*>(gen_i))
         {
-            m_output_ss << "STACKR <offset>";
+            m_output_ss << "STACKR " << g->offset << "\n";
         }
     }
 
