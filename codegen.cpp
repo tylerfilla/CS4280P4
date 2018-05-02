@@ -4,210 +4,230 @@
  * Project 4
  */
 
-#include <utility>
 #include "codegen.h"
 
 p4::codegen::codegen()
         : m_tree(nullptr)
         , m_output {}
         , m_output_ss {}
-        , m_labels {}
-        , m_vars {}
-        , m_gens {}
+        , m_frags {}
         , m_ro_type {}
 {
 }
 
 void p4::codegen::stage_1_traverse(tree::node* root)
 {
+    if (!root)
+        return;
+
     if (auto node = dynamic_cast<tree::node_program*>(root))
     {
+        // Enter global scope
+        m_frags.push_back(new frag_scope_enter {});
+
+        // Call variables
         stage_1_traverse(node->nd_vars);
+
+        // Call block
         stage_1_traverse(node->nd_block);
 
-        // Code: Stop the program
-        m_gens.push_back(new gen_instr_stop);
+        // Leave global scope
+        m_frags.push_back(new frag_scope_leave {});
+
+        // Stop the program
+        m_frags.push_back(new frag_ins_stop);
     }
     else if (auto node = dynamic_cast<tree::node_block*>(root))
     {
-        // Passthrough
+        // Enter local scope
+        m_frags.push_back(new frag_scope_enter {});
+
+        // Call variables
         stage_1_traverse(node->nd_vars);
+
+        // Call statements
         stage_1_traverse(node->nd_stats);
+
+        // Leave local scope
+        m_frags.push_back(new frag_scope_leave {});
     }
     else if (auto node = dynamic_cast<tree::node_vars*>(root))
     {
-        node->tk_name;
-        node->tk_value;
+        // The initial value
+        int value;
 
+        // Convert initial value to integer
+        {
+            std::stringstream ss;
+            ss << node->tk_value.content;
+            ss >> value;
+        }
+
+        // Declare the variable
+        auto var = new frag_decl_var {};
+        var->name = node->tk_name.content;
+        var->value = value;
+        m_frags.push_back(var);
+
+        // Call more variables
         stage_1_traverse(node->nd_mvars);
     }
     else if (auto node = dynamic_cast<tree::node_mvars_p1*>(root))
     {
-        // Empty
     }
     else if (auto node = dynamic_cast<tree::node_mvars_p2*>(root))
     {
-        node->tk_identifier;
+        // Declare the variable and zero it
+        auto var = new frag_decl_var {};
+        var->name = node->tk_identifier.content;
+        var->value = 0;
+        m_frags.push_back(var);
 
+        // Call more variables
         stage_1_traverse(node->nd_mvars);
     }
     else if (auto node = dynamic_cast<tree::node_expr*>(root))
     {
+        // Call the expression components
         stage_1_traverse(node->nd_M);
         stage_1_traverse(node->nd_expr_2);
     }
     else if (auto node = dynamic_cast<tree::node_expr_2_p1*>(root))
     {
-        // Temporary variable
-        auto tmp_lhs = new var {};
+        // Create temporary variable
+        auto tmp_lhs = new frag_ref_var {};
         tmp_lhs->name = "";
+        m_frags.push_back(tmp_lhs);
 
-        // Code: Store lhs (acc) to lhs (tmp_lhs)
+        // Store lhs (acc) to lhs (tmp_lhs)
         {
-            auto instr = new gen_instr_store {};
-            instr->dest = tmp_lhs;
-            m_gens.push_back(instr);
+            auto i = new frag_ins_store {};
+            i->dest = tmp_lhs;
+            m_frags.push_back(i);
         }
 
         // Call rhs
         stage_1_traverse(node->nd_rhs);
 
-        // Code: Add rhs (acc) by lhs (tmp_lhs)
+        // Add lhs (tmp_lhs) to rhs (acc)
         {
-            auto instr = new gen_instr_add_var {};
-            instr->rhs = tmp_lhs;
-            m_gens.push_back(instr);
+            auto i = new frag_ins_add_var {};
+            i->rhs = tmp_lhs;
+            m_frags.push_back(i);
         }
     }
     else if (auto node = dynamic_cast<tree::node_expr_2_p2*>(root))
     {
-        // Code: Reserve stack space
-        {
-            auto instr = new gen_instr_push {};
-            m_gens.push_back(instr);
-        }
+        // Reserve a stack slot
+        m_frags.push_back(new frag_ins_push {});
 
-        // Code: Copy lhs (acc) to stack
+        // Copy lhs (acc) to stack
         {
-            auto instr = new gen_instr_stackw {};
-            instr->offset = 0;
-            m_gens.push_back(instr);
+            auto i = new frag_ins_stackw {};
+            i->offset = 0;
+            m_frags.push_back(i);
         }
 
         // Call rhs
         stage_1_traverse(node->nd_rhs);
 
-        // Temporary variable
-        auto tmp_rhs = new var {};
+        // Create temporary variable
+        auto tmp_rhs = new frag_ref_var {};
         tmp_rhs->name = "";
 
-        // Code: Store rhs (acc) to rhs (tmp_rhs)
+        // Store rhs (acc) to rhs (tmp_rhs)
         {
-            auto instr = new gen_instr_store {};
-            instr->dest = tmp_rhs;
-            m_gens.push_back(instr);
+            auto i = new frag_ins_store {};
+            i->dest = tmp_rhs;
+            m_frags.push_back(i);
         }
 
-        // Code: Load lhs (stack 0) to lhs (acc)
+        // Load lhs (stack 0) to lhs (acc)
+        m_frags.push_back(new frag_ins_stackr {});
+
+        // Subtract rhs (tmp_rhs) from lhs (acc)
         {
-            auto instr = new gen_instr_stackr {};
-            m_gens.push_back(instr);
+            auto i = new frag_ins_sub_var {};
+            i->rhs = tmp_rhs;
+            m_frags.push_back(i);
         }
 
-        // Code: Subtract lhs (acc) by rhs (tmp_rhs)
-        {
-            auto instr = new gen_instr_sub_var {};
-            instr->rhs = tmp_rhs;
-            m_gens.push_back(instr);
-        }
-
-        // Code: Free stack space
-        {
-            auto instr = new gen_instr_pop {};
-            m_gens.push_back(instr);
-        }
+        // Free stack space
+        m_frags.push_back(new frag_ins_pop {});
     }
     else if (auto node = dynamic_cast<tree::node_expr_2_p3*>(root))
     {
-        // Code: Reserve stack space
-        {
-            auto instr = new gen_instr_push {};
-            m_gens.push_back(instr);
-        }
+        // Reserve a stack slot
+        m_frags.push_back(new frag_ins_push {});
 
-        // Code: Copy lhs (acc) to stack
+        // Copy lhs (acc) to stack
         {
-            auto instr = new gen_instr_stackw {};
-            instr->offset = 0;
-            m_gens.push_back(instr);
+            auto i = new frag_ins_stackw {};
+            i->offset = 0;
+            m_frags.push_back(i);
         }
 
         // Call rhs
         stage_1_traverse(node->nd_rhs);
 
-        // Temporary variable
-        auto tmp_rhs = new var {};
+        // Create temporary variable
+        auto tmp_rhs = new frag_ref_var {};
         tmp_rhs->name = "";
 
-        // Code: Store rhs (acc) to rhs (tmp_rhs)
+        // Store rhs (acc) to rhs (tmp_rhs)
         {
-            auto instr = new gen_instr_store {};
-            instr->dest = tmp_rhs;
-            m_gens.push_back(instr);
+            auto i = new frag_ins_store {};
+            i->dest = tmp_rhs;
+            m_frags.push_back(i);
         }
 
-        // Code: Load lhs (stack 0) to lhs (acc)
+        // Load lhs (stack 0) to lhs (acc)
+        m_frags.push_back(new frag_ins_stackr {});
+
+        // Divide lhs (acc) by rhs (tmp_rhs)
         {
-            auto instr = new gen_instr_stackr {};
-            m_gens.push_back(instr);
+            auto i = new frag_ins_div_var {};
+            i->rhs = tmp_rhs;
+            m_frags.push_back(i);
         }
 
-        // Code: Divide lhs (acc) by rhs (tmp_rhs)
-        {
-            auto instr = new gen_instr_div_var {};
-            instr->rhs = tmp_rhs;
-            m_gens.push_back(instr);
-        }
-
-        // Code: Free stack space
-        {
-            auto instr = new gen_instr_pop {};
-            m_gens.push_back(instr);
-        }
+        // Free stack space
+        m_frags.push_back(new frag_ins_pop {});
     }
     else if (auto node = dynamic_cast<tree::node_expr_2_p4*>(root))
     {
-        // Temporary variable
-        auto tmp_lhs = new var {};
+        // Create temporary variable
+        auto tmp_lhs = new frag_ref_var {};
         tmp_lhs->name = "";
+        m_frags.push_back(tmp_lhs);
 
-        // Code: Store lhs (acc) to lhs (tmp_lhs)
+        // Store lhs (acc) to lhs (tmp_lhs)
         {
-            auto instr = new gen_instr_store {};
-            instr->dest = tmp_lhs;
-            m_gens.push_back(instr);
+            auto i = new frag_ins_store {};
+            i->dest = tmp_lhs;
+            m_frags.push_back(i);
         }
 
         // Call rhs
         stage_1_traverse(node->nd_rhs);
 
-        // Code: Multiply rhs (acc) by lhs (tmp_lhs)
+        // Multiply lhs (tmp_lhs) to rhs (acc)
         {
-            auto instr = new gen_instr_mult_var {};
-            instr->rhs = tmp_lhs;
-            m_gens.push_back(instr);
+            auto i = new frag_ins_mult_var {};
+            i->rhs = tmp_lhs;
+            m_frags.push_back(i);
         }
     }
     else if (auto node = dynamic_cast<tree::node_M_p1*>(root))
     {
-        // Call M
+        // Call body expressions
         stage_1_traverse(node->nd_M);
 
-        // Code: Multiply by -1
+        // Multiply by -1
         {
-            auto instr = new gen_instr_mult_imm {};
-            instr->rhs = -1;
-            m_gens.push_back(instr);
+            auto i = new frag_ins_mult_imm {};
+            i->rhs = -1;
+            m_frags.push_back(i);
         }
     }
     else if (auto node = dynamic_cast<tree::node_M_p2*>(root))
@@ -222,42 +242,51 @@ void p4::codegen::stage_1_traverse(tree::node* root)
     }
     else if (auto node = dynamic_cast<tree::node_R_p2*>(root))
     {
-        // Variable
-        auto ref = new var {};
+        // Variable reference
+        auto ref = new frag_ref_var {};
         ref->name = node->tk_identifier.content;
+        m_frags.push_back(ref);
 
-        // Code: Load value (ref)
+        // Load value (ref)
         {
-            auto instr = new gen_instr_load_var {};
-            instr->src = ref;
-            m_gens.push_back(instr);
+            auto i = new frag_ins_load_var {};
+            i->src = ref;
+            m_frags.push_back(i);
         }
     }
     else if (auto node = dynamic_cast<tree::node_R_p3*>(root))
     {
-        int value = 0;
+        // The integer value
+        int value;
 
-        std::stringstream ss {};
-        ss << node->tk_integer.content;
-        ss >> value;
-
-        // Code: Load value (immediate)
+        // Convert token content to an integer
         {
-            auto instr = new gen_instr_load_imm {};
-            instr->value = value;
-            m_gens.push_back(instr);
+            std::stringstream ss {};
+            ss << node->tk_integer.content;
+            ss >> value;
+        }
+
+        // Load value (immediate)
+        {
+            auto i = new frag_ins_load_imm {};
+            i->src = value;
+            m_frags.push_back(i);
         }
     }
     else if (auto node = dynamic_cast<tree::node_stats*>(root))
     {
-        // Passthrough
+        // Call statement
         stage_1_traverse(node->nd_stat);
+
+        // Call more statements
         stage_1_traverse(node->nd_mStat);
     }
     else if (auto node = dynamic_cast<tree::node_mStat*>(root))
     {
-        // Passthrough
+        // Call statement
         stage_1_traverse(node->nd_stat);
+
+        // Call more statements
         stage_1_traverse(node->nd_mStat);
     }
     else if (auto node = dynamic_cast<tree::node_stat_p1*>(root))
@@ -292,37 +321,40 @@ void p4::codegen::stage_1_traverse(tree::node* root)
     }
     else if (auto node = dynamic_cast<tree::node_in*>(root))
     {
-        // Variable
-        auto ref = new var {};
+        // Variable reference
+        auto ref = new frag_ref_var {};
         ref->name = node->tk_identifier.content;
+        m_frags.push_back(ref);
 
-        // Code: Read to variable
+        // Read to variable
         {
-            auto instr = new gen_instr_read {};
-            instr->dest = ref;
-            m_gens.push_back(instr);
+            auto i = new frag_ins_read {};
+            i->dest = ref;
+            m_frags.push_back(i);
         }
     }
     else if (auto node = dynamic_cast<tree::node_out*>(root))
     {
+        // Call operand expression
         stage_1_traverse(node->nd_expr);
 
-        // Temporary variable
-        auto tmp = new var {};
+        // Create temporary variable
+        auto tmp = new frag_ref_var {};
         tmp->name = "";
+        m_frags.push_back(tmp);
 
-        // Code: Store value (acc) into temporary
+        // Store operand value (acc) into temporary
         {
-            auto instr = new gen_instr_store {};
-            instr->dest = tmp;
-            m_gens.push_back(instr);
+            auto i = new frag_ins_store {};
+            i->dest = tmp;
+            m_frags.push_back(i);
         }
 
-        // Code: Write from temporary
+        // Write from temporary
         {
-            auto instr = new gen_instr_write_var {};
-            instr->src = tmp;
-            m_gens.push_back(instr);
+            auto i = new frag_ins_write_var {};
+            i->src = tmp;
+            m_frags.push_back(i);
         }
     }
     else if (auto node = dynamic_cast<tree::node_if*>(root))
@@ -330,93 +362,95 @@ void p4::codegen::stage_1_traverse(tree::node* root)
         // Call rhs
         stage_1_traverse(node->nd_rhs);
 
-        // Temporary variable
-        auto tmp = new var {};
+        // Create temporary variable
+        auto tmp = new frag_ref_var {};
         tmp->name = "";
+        m_frags.push_back(tmp);
 
-        // Code: Store rhs (acc) to rhs (tmp)
+        // Store rhs value (acc) to rhs (tmp)
         {
-            auto instr = new gen_instr_store {};
-            instr->dest = tmp;
-            m_gens.push_back(instr);
+            auto i = new frag_ins_store {};
+            i->dest = tmp;
+            m_frags.push_back(i);
         }
 
         // Call lhs
         stage_1_traverse(node->nd_lhs);
 
-        // Code: Subtract rhs (tmp) from lhs (acc)
+        // Subtract rhs (tmp) from lhs (acc)
         {
-            auto instr = new gen_instr_sub_var {};
-            instr->rhs = tmp;
-            m_gens.push_back(instr);
+            auto i = new frag_ins_sub_var {};
+            i->rhs = tmp;
+            m_frags.push_back(i);
         }
 
         // Call operator
+        // This does not generate code
         stage_1_traverse(node->nd_operator);
 
-        // Jump label
-        auto jmp = new label {};
+        // Create jump label
+        auto jmp = new frag_ref_label {};
         jmp->name = "";
 
-        // Handle operator type
+        // Handle operator
         switch (m_ro_type)
         {
         case ro_type::LT:
             {
                 // OP: Less than
 
-                // Code: Jump if diff >= 0
-                auto instr = new gen_instr_brzpos {};
-                instr->target = jmp;
-                m_gens.push_back(instr);
+                // Jump if diff >= 0
+                auto i = new frag_ins_brzpos {};
+                i->target = jmp;
+                m_frags.push_back(i);
             }
             break;
         case ro_type::LTE:
             {
                 // OP: Less than or equal to
 
-                // Code: Jump if diff > 0
-                auto instr = new gen_instr_brpos {};
-                instr->target = jmp;
-                m_gens.push_back(instr);
+                // Jump if diff > 0
+                auto i = new frag_ins_brpos {};
+                i->target = jmp;
+                m_frags.push_back(i);
             }
             break;
         case ro_type::GT:
             {
                 // OP: Greater than
 
-                // Code: Jump if diff <= 0
-                auto instr = new gen_instr_brzneg {};
-                instr->target = jmp;
-                m_gens.push_back(instr);
+                // Jump if diff <= 0
+                auto i = new frag_ins_brzneg {};
+                i->target = jmp;
+                m_frags.push_back(i);
             }
             break;
         case ro_type::GTE:
             {
                 // OP: Greater than or equal to
 
-                // Code: Jump if diff < 0
-                auto instr = new gen_instr_brneg {};
-                instr->target = jmp;
-                m_gens.push_back(instr);
+                // Jump if diff < 0
+                auto i = new frag_ins_brneg {};
+                i->target = jmp;
+                m_frags.push_back(i);
             }
             break;
         case ro_type::EQ:
             {
                 // OP: Equal to
 
-                // Code: Jump if diff < 0
+                // Jump if diff < 0
                 {
-                    auto instr = new gen_instr_brneg {};
-                    instr->target = jmp;
-                    m_gens.push_back(instr);
+                    auto i = new frag_ins_brneg {};
+                    i->target = jmp;
+                    m_frags.push_back(i);
                 }
 
-                // Code: Jump if diff > 0
+                // Jump if diff > 0
                 {
-                    auto instr = new gen_instr_brpos {};
-                    instr->target = jmp;
-                    m_gens.push_back(instr);
+                    auto i = new frag_ins_brpos {};
+                    i->target = jmp;
+                    m_frags.push_back(i);
                 }
             }
             break;
@@ -424,10 +458,10 @@ void p4::codegen::stage_1_traverse(tree::node* root)
             {
                 // OP: Not equal to
 
-                // Code: Jump if diff == 0
-                auto instr = new gen_instr_brzero {};
-                instr->target = jmp;
-                m_gens.push_back(instr);
+                // Jump if diff == 0
+                auto i = new frag_ins_brzero {};
+                i->target = jmp;
+                m_frags.push_back(i);
             }
             break;
         }
@@ -438,31 +472,28 @@ void p4::codegen::stage_1_traverse(tree::node* root)
         // Call body block
         stage_1_traverse(node->nd_body);
 
-        // Code: No operation (branch target)
-        {
-            auto instr = new gen_instr_noop {};
-            m_gens.push_back(instr);
-            jmp->target = instr;
-        }
+        // Append jump label after body
+        m_frags.push_back(jmp);
     }
     else if (auto node = dynamic_cast<tree::node_loop*>(root))
     {
-        // TODO
+        // TODO: Implement loop
     }
     else if (auto node = dynamic_cast<tree::node_assign*>(root))
     {
-        // Call value
+        // Call value expression
         stage_1_traverse(node->nd_value);
 
-        // Variable
-        auto ref = new var {};
+        // Variable reference
+        auto ref = new frag_ref_var {};
         ref->name = node->tk_name.content;
+        m_frags.push_back(ref);
 
-        // Code: Store value (acc) to variable (ref)
+        // Store value (acc) to variable (ref)
         {
-            auto instr = new gen_instr_store {};
-            instr->dest = ref;
-            m_gens.push_back(instr);
+            auto i = new frag_ins_store {};
+            i->dest = ref;
+            m_frags.push_back(i);
         }
     }
     else if (auto node = dynamic_cast<tree::node_RO_p1*>(root))
@@ -519,10 +550,9 @@ void p4::codegen::do_stage_1()
 {
     //
     // Stage 1: Roughly sketch the program
-    //   * Produces a sequence of objects outlining the final code
+    //   * Produces a sequence of fragments outlining the final program
     //   * No storage allocation is performed
     //       - Variable references are kept as strings
-    //       - Temporary variables are named "" (empty string)
     //   * The parse tree only needs to be traversed once
     //
 
@@ -539,6 +569,65 @@ void p4::codegen::do_stage_2()
     // TODO: Create gens for var declarations and resolve their refs
     // This assigns global namespace names to global variables and stack offsets for local variables
     // This inserts stackr and stackw gens to enable local variable access
+
+    for (auto&& frag_i : m_frags)
+    {
+        if (auto f = dynamic_cast<frag_decl_label*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_decl_var*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ref_label*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ref_var*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_copy*>(frag_i))
+        {
+            f->dest;
+            f->src;
+        }
+        else if (auto f = dynamic_cast<frag_ins_add_var*>(frag_i))
+        {
+            f->rhs;
+        }
+        else if (auto f = dynamic_cast<frag_ins_sub_var*>(frag_i))
+        {
+            f->rhs;
+        }
+        else if (auto f = dynamic_cast<frag_ins_div_var*>(frag_i))
+        {
+            f->rhs;
+        }
+        else if (auto f = dynamic_cast<frag_ins_mult_var*>(frag_i))
+        {
+            f->rhs;
+        }
+        else if (auto f = dynamic_cast<frag_ins_read*>(frag_i))
+        {
+            f->dest;
+        }
+        else if (auto f = dynamic_cast<frag_ins_write_var*>(frag_i))
+        {
+            f->src;
+        }
+        else if (auto f = dynamic_cast<frag_ins_store*>(frag_i))
+        {
+            f->dest;
+        }
+        else if (auto f = dynamic_cast<frag_ins_load_var*>(frag_i))
+        {
+            f->src;
+        }
+        else if (auto f = dynamic_cast<frag_scope_enter*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_scope_leave*>(frag_i))
+        {
+        }
+    }
 }
 
 void p4::codegen::do_stage_3()
@@ -549,127 +638,213 @@ void p4::codegen::do_stage_3()
 
     // TODO: Create gens for label declarations and resolve their refs
     // This assigns global namespace names to labels
+
+    for (auto&& frag_i : m_frags)
+    {
+        if (auto f = dynamic_cast<frag_decl_label*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_decl_var*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ref_label*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ref_var*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_copy*>(frag_i))
+        {
+            f->dest;
+            f->src;
+        }
+        else if (auto f = dynamic_cast<frag_ins_add_var*>(frag_i))
+        {
+            f->rhs;
+        }
+        else if (auto f = dynamic_cast<frag_ins_sub_var*>(frag_i))
+        {
+            f->rhs;
+        }
+        else if (auto f = dynamic_cast<frag_ins_div_var*>(frag_i))
+        {
+            f->rhs;
+        }
+        else if (auto f = dynamic_cast<frag_ins_mult_var*>(frag_i))
+        {
+            f->rhs;
+        }
+        else if (auto f = dynamic_cast<frag_ins_read*>(frag_i))
+        {
+            f->dest;
+        }
+        else if (auto f = dynamic_cast<frag_ins_write_var*>(frag_i))
+        {
+            f->src;
+        }
+        else if (auto f = dynamic_cast<frag_ins_store*>(frag_i))
+        {
+            f->dest;
+        }
+        else if (auto f = dynamic_cast<frag_ins_load_var*>(frag_i))
+        {
+            f->src;
+        }
+        else if (auto f = dynamic_cast<frag_scope_enter*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_scope_leave*>(frag_i))
+        {
+        }
+    }
 }
 
 void p4::codegen::compose()
 {
-    for (auto&& gen_i : m_gens)
+    for (auto&& frag_i : m_frags)
     {
-        if (auto g = dynamic_cast<gen_decl_label*>(gen_i))
+        if (auto f = dynamic_cast<frag_decl_label*>(frag_i))
         {
-            m_output_ss << g->name << ":";
+//          m_output_ss << f->name << ":";
+            m_output_ss << "(declare label) " << f->name << "\n";
         }
-        else if (auto g = dynamic_cast<gen_decl_var*>(gen_i))
+        else if (auto f = dynamic_cast<frag_decl_var*>(frag_i))
         {
-            m_output_ss << g->name << " " << g->value << "\n";
+//          m_output_ss << f->name << " " << f->value << "\n";
+            m_output_ss << "(declare var) " << f->name << " <- " << f->value << "\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_br*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ref_label*>(frag_i))
         {
-            m_output_ss << "BR <target>\n";
+            m_output_ss << "(ref_label) " << f->name << "\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_brneg*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ref_var*>(frag_i))
         {
-            m_output_ss << "BRNEG <target>\n";
+            m_output_ss << "(ref_var) " << f->name << "\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_brzneg*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_br*>(frag_i))
         {
-            m_output_ss << "BRZNEG <target>\n";
+            m_output_ss << "BR <ref_label>\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_brpos*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_brneg*>(frag_i))
         {
-            m_output_ss << "BRPOS <target>\n";
+            m_output_ss << "BRNEG <ref_label>\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_brzpos*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_brzneg*>(frag_i))
         {
-            m_output_ss << "BRZPOS <target>\n";
+            m_output_ss << "BRZNEG <ref_label>\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_brzero*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_brpos*>(frag_i))
         {
-            m_output_ss << "BRZERO <target>\n";
+            m_output_ss << "BRPOS <ref_label>\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_copy*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_brzpos*>(frag_i))
         {
-            m_output_ss << "COPY <dest> <src>\n";
+            m_output_ss << "BRZPOS <ref_label>\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_add_var*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_brzero*>(frag_i))
         {
-            m_output_ss << "ADD <var>\n";
+            m_output_ss << "BRZERO <ref_label>\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_add_imm*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_copy*>(frag_i))
         {
-            m_output_ss << "ADD " << g->rhs << "\n";
+            m_output_ss << "COPY <ref_var> <ref_var>\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_sub_var*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_add_var*>(frag_i))
         {
-            m_output_ss << "SUB <var>\n";
+//          f->rhs;
+            m_output_ss << "ADD <ref_var>\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_sub_imm*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_add_imm*>(frag_i))
         {
-            m_output_ss << "SUB " << g->rhs << "\n";
+            m_output_ss << "ADD " << f->rhs << "\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_div_var*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_sub_var*>(frag_i))
         {
-            m_output_ss << "DIV <var>\n";
+//          f->rhs;
+            m_output_ss << "SUB <ref_var>\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_div_imm*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_sub_imm*>(frag_i))
         {
-            m_output_ss << "DIV " << g->rhs << "\n";
+            m_output_ss << "SUB " << f->rhs << "\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_mult_var*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_div_var*>(frag_i))
         {
-            m_output_ss << "MULT <var>\n";
+//          f->rhs;
+            m_output_ss << "DIV <ref_var>\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_mult_imm *>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_div_imm*>(frag_i))
         {
-            m_output_ss << "MULT " << g->rhs << "\n";
+//          f->rhs;
+            m_output_ss << "DIV " << f->rhs << "\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_read*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_mult_var*>(frag_i))
         {
-            m_output_ss << "READ <var>\n";
+//          f->rhs;
+            m_output_ss << "MULT <ref_var>\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_write_var*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_mult_imm*>(frag_i))
         {
-            m_output_ss << "WRITE <var>\n";
+            m_output_ss << "MULT " << f->rhs << "\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_write_imm*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_read*>(frag_i))
         {
-            m_output_ss << "WRITE " << g->value << "\n";
+//          f->dest;
+            m_output_ss << "READ <ref_var>\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_stop*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_write_var*>(frag_i))
+        {
+//          f->src;
+            m_output_ss << "WRITE <ref_var>\n";
+        }
+        else if (auto f = dynamic_cast<frag_ins_write_imm*>(frag_i))
+        {
+            m_output_ss << "WRITE " << f->src << "\n";
+        }
+        else if (auto f = dynamic_cast<frag_ins_stop*>(frag_i))
         {
             m_output_ss << "STOP\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_store*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_store*>(frag_i))
         {
-            m_output_ss << "STORE <var>\n";
+//          f->dest;
+            m_output_ss << "STORE <ref_var>\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_load_var*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_load_var*>(frag_i))
         {
-            m_output_ss << "LOAD <var>\n";
+//          f->src;
+            m_output_ss << "LOAD <ref_var>\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_load_imm*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_load_imm*>(frag_i))
         {
-            m_output_ss << "LOAD " << g->value << "\n";
+            m_output_ss << "LOAD " << f->src << "\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_noop*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_noop*>(frag_i))
         {
             m_output_ss << "NOOP\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_push*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_push*>(frag_i))
         {
             m_output_ss << "PUSH\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_pop*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_pop*>(frag_i))
         {
             m_output_ss << "POP\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_stackw*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_stackw*>(frag_i))
         {
-            m_output_ss << "STACKW " << g->offset << "\n";
+            m_output_ss << "STACKW " << f->offset << "\n";
         }
-        else if (auto g = dynamic_cast<gen_instr_stackr*>(gen_i))
+        else if (auto f = dynamic_cast<frag_ins_stackr*>(frag_i))
         {
-            m_output_ss << "STACKR " << g->offset << "\n";
+            m_output_ss << "STACKR " << f->offset << "\n";
+        }
+        else if (auto f = dynamic_cast<frag_scope_enter*>(frag_i))
+        {
+            m_output_ss << "<scope_enter>\n";
+        }
+        else if (auto f = dynamic_cast<frag_scope_leave*>(frag_i))
+        {
+            m_output_ss << "<scope_leave>\n";
         }
     }
 

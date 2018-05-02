@@ -1,0 +1,16 @@
+program
+    var x = 1 : y.
+start
+    let y = x.
+
+    start
+        var x = 0 : z.
+
+        let x = 5.
+        let z = x + y.
+
+        print %(y - z).
+    stop
+
+    print %(x - y).
+stop

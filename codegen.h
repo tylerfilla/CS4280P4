@@ -7,7 +7,6 @@
 #ifndef P4_CODEGEN_H
 #define P4_CODEGEN_H
 
-#include <functional>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -18,450 +17,315 @@ namespace p4
 {
 
 /**
- * A code generator for the target VM from a source parse tree.
+ * A code generator for the target language.
  */
 class codegen
 {
     /**
-     * An intermediate piece of generated code.
+     * A generated program fragment. This represents a piece of the final
+     * program, such as an arithmetic instruction or a variable reference. Some
+     * bookkeeping fragments also exist, such as variable scope indicators. This
+     * technique creates a flat view of the generated program, rather than a
+     * tree view, which makes storage and label allocation/renaming easier.
      */
-    struct gen
+    struct frag
     {
-        virtual ~gen() = default;
-
-        virtual std::string get_desc() const
-        { return "<unknown>"; }
+        virtual ~frag() = default;
     };
 
     /**
-     * An intermediate label reference.
+     * A label declaration.
      */
-    struct label
+    struct frag_decl_label : frag
     {
-        /** The user-given name of the label. */
-        std::string name;
-
-        /** The target generated code element. */
-        gen* target;
-    };
-
-    /**
-     * An intermediate variable reference.
-     */
-    struct var
-    {
-        /** The user-given name of the variable. */
+        /** The declared name of the label. */
         std::string name;
     };
 
     /**
-     * A generated label declaration.
+     * A variable declaration.
      */
-    struct gen_decl_label : gen
+    struct frag_decl_var : frag
     {
-        /** The originating label object. */
-        label* obj;
-
-        /** The generated label name. */
+        /** The declared name of the variable. */
         std::string name;
 
-        ~gen_decl_label() final = default;
-
-        std::string get_desc() const final
-        { return std::string("label: ") + name; }
-    };
-
-    /**
-     * A generated variable declaration.
-     */
-    struct gen_decl_var : gen
-    {
-        /** The originating variable object. */
-        var* obj;
-
-        /** The generated variable name. */
-        std::string name;
-
-        /** The initial value. */
+        /** The initial value of the variable. */
         int value;
-
-        ~gen_decl_var() final = default;
-
-        std::string get_desc() const final
-        { return std::string("var: ") + name; }
     };
 
     /**
-     * A generated BR instruction.
+     * Label reference fragment.
      */
-    struct gen_instr_br : gen
+    struct frag_ref_label : frag
+    {
+        /** The source program label name. */
+        std::string name;
+    };
+
+    /**
+     * Variable reference fragment.
+     */
+    struct frag_ref_var : frag
+    {
+        /** The source program variable name. */
+        std::string name;
+    };
+
+    /**
+     * Instruction fragment. BR. Unconditional branch.
+     */
+    struct frag_ins_br : frag
     {
         /** The branch target. */
-        label* target;
-
-        ~gen_instr_br() final = default;
-
-        std::string get_desc() const final
-        { return "br"; }
+        frag_ref_label* target;
     };
 
     /**
-     * A generated BRNEG instruction.
+     * Instruction fragment. BRNEG. Branch if negative.
      */
-    struct gen_instr_brneg : gen
+    struct frag_ins_brneg : frag
     {
         /** The branch target. */
-        label* target;
-
-        ~gen_instr_brneg() final = default;
-
-        std::string get_desc() const final
-        { return "brneg"; }
+        frag_ref_label* target;
     };
 
     /**
-     * A generated BRZNEG instruction.
+     * Instruction fragment. BRZNEG. Branch if zero or negative.
      */
-    struct gen_instr_brzneg : gen
+    struct frag_ins_brzneg : frag
     {
         /** The branch target. */
-        label* target;
-
-        ~gen_instr_brzneg() final = default;
-
-        std::string get_desc() const final
-        { return "brzneg"; }
+        frag_ref_label* target;
     };
 
     /**
-     * A generated BRPOS instruction.
+     * Instruction fragment. BRPOS. Branch if positive.
      */
-    struct gen_instr_brpos : gen
+    struct frag_ins_brpos : frag
     {
         /** The branch target. */
-        label* target;
-
-        ~gen_instr_brpos() final = default;
-
-        std::string get_desc() const final
-        { return "brpos"; }
+        frag_ref_label* target;
     };
 
     /**
-     * A generated BRZPOS instruction.
+     * Instruction fragment. BRZPOS. Branch if zero or positive.
      */
-    struct gen_instr_brzpos : gen
+    struct frag_ins_brzpos : frag
     {
         /** The branch target. */
-        label* target;
-
-        ~gen_instr_brzpos() final = default;
-
-        std::string get_desc() const final
-        { return "brzpos"; }
+        frag_ref_label* target;
     };
 
     /**
-     * A generated BRZERO instruction.
+     * Instruction fragment. BRZERO. Branch if zero.
      */
-    struct gen_instr_brzero : gen
+    struct frag_ins_brzero : frag
     {
         /** The branch target. */
-        label* target;
-
-        ~gen_instr_brzero() final = default;
-
-        std::string get_desc() const final
-        { return "brzero"; }
+        frag_ref_label* target;
     };
 
     /**
-     * A generated COPY instruction.
+     * Instruction fragment. COPY. Copy variable content.
      */
-    struct gen_instr_copy : gen
+    struct frag_ins_copy : frag
     {
-        /** The source variable. */
-        var* src;
+        /** The destination variable operand. */
+        frag_ref_var* dest;
 
-        /** The destination variable. */
-        var* dest;
-
-        ~gen_instr_copy() final = default;
-
-        std::string get_desc() const final
-        { return "copy"; }
+        /** The source variable operand. */
+        frag_ref_var* src;
     };
 
     /**
-     * A generated variable ADD instruction.
+     * Instruction fragment. ADD (imm). Add immediate rhs.
      */
-    struct gen_instr_add_var : gen
+    struct frag_ins_add_imm : frag
     {
-        /** The operand variable. */
-        var* rhs;
-
-        ~gen_instr_add_var() final = default;
-
-        std::string get_desc() const final
-        { return "variable add"; }
-    };
-
-    /**
-     * A generated immediate ADD instruction.
-     */
-    struct gen_instr_add_imm : gen
-    {
-        /** The immediate operand value. */
+        /** The immediate rhs. */
         int rhs;
-
-        ~gen_instr_add_imm() final = default;
-
-        std::string get_desc() const final
-        { return "immediate add"; }
     };
 
     /**
-     * A generated variable SUB instruction.
+     * Instruction fragment. ADD (var). Add variable rhs.
      */
-    struct gen_instr_sub_var : gen
+    struct frag_ins_add_var : frag
     {
-        /** The operand variable. */
-        var* rhs;
-
-        ~gen_instr_sub_var() final = default;
-
-        std::string get_desc() const final
-        { return "variable sub"; }
+        /** The variable rhs. */
+        frag_ref_var* rhs;
     };
 
     /**
-     * A generated immediate SUB instruction.
+     * Instruction fragment. SUB (imm). Subtract immediate rhs.
      */
-    struct gen_instr_sub_imm : gen
+    struct frag_ins_sub_imm : frag
     {
-        /** The immediate operand value. */
+        /** The immediate rhs. */
         int rhs;
-
-        ~gen_instr_sub_imm() final = default;
-
-        std::string get_desc() const final
-        { return "immediate sub"; }
     };
 
     /**
-     * A generated variable DIV instruction.
+     * Instruction fragment. SUB (var). Subtract variable rhs.
      */
-    struct gen_instr_div_var : gen
+    struct frag_ins_sub_var : frag
     {
-        /** The operand variable. */
-        var* rhs;
-
-        ~gen_instr_div_var() final = default;
-
-        std::string get_desc() const final
-        { return "variable div"; }
+        /** The variable rhs. */
+        frag_ref_var* rhs;
     };
 
     /**
-     * A generated immediate DIV instruction.
+     * Instruction fragment. DIV (imm) Divide by immediate rhs.
      */
-    struct gen_instr_div_imm : gen
+    struct frag_ins_div_imm : frag
     {
-        /** The immediate operand value. */
+        /** The immediate rhs. */
         int rhs;
-
-        ~gen_instr_div_imm() final = default;
-
-        std::string get_desc() const final
-        { return "immediate div"; }
     };
 
     /**
-     * A generated variable MULT instruction.
+     * Instruction fragment. DIV (var). Divide by variable rhs.
      */
-    struct gen_instr_mult_var : gen
+    struct frag_ins_div_var : frag
     {
-        /** The operand variable. */
-        var* rhs;
-
-        ~gen_instr_mult_var() final = default;
-
-        std::string get_desc() const final
-        { return "variable mult"; }
+        /** The variable rhs. */
+        frag_ref_var* rhs;
     };
 
     /**
-     * A generated immediate MULT instruction.
+     * Instruction fragment. MULT (imm). Multiply by immediate rhs.
      */
-    struct gen_instr_mult_imm : gen
+    struct frag_ins_mult_imm : frag
     {
-        /** The immediate operand value. */
+        /** The immediate rhs. */
         int rhs;
-
-        ~gen_instr_mult_imm() final = default;
-
-        std::string get_desc() const final
-        { return "immediate mult"; }
     };
 
     /**
-     * A generated READ instruction.
+     * Instruction fragment. MULT (var). Multiply by variable rhs.
      */
-    struct gen_instr_read : gen
+    struct frag_ins_mult_var : frag
     {
-        /** The destination variable. */
-        var* dest;
-
-        ~gen_instr_read() final = default;
-
-        std::string get_desc() const final
-        { return "read"; }
+        /** The variable rhs. */
+        frag_ref_var* rhs;
     };
 
     /**
-     * A generated variable WRITE instruction.
+     * Instruction fragment. READ. Read to variable destination.
      */
-    struct gen_instr_write_var : gen
+    struct frag_ins_read : frag
     {
-        /** The source variable. */
-        var* src;
-
-        ~gen_instr_write_var() final = default;
-
-        std::string get_desc() const final
-        { return "write variable"; }
+        /** The variable destination. */
+        frag_ref_var* dest;
     };
 
     /**
-     * A generated immediate WRITE instruction.
+     * Instruction fragment. WRITE (imm). Write from immediate source.
      */
-    struct gen_instr_write_imm : gen
+    struct frag_ins_write_imm : frag
     {
-        /** The immediate value. */
-        int value;
-
-        ~gen_instr_write_imm() final = default;
-
-        std::string get_desc() const final
-        { return "write immediate"; }
+        /** The immediate source. */
+        int src;
     };
 
     /**
-     * A generated STOP instruction.
+     * Instruction fragment. WRITE (var). Write from variable source.
      */
-    struct gen_instr_stop : virtual gen
+    struct frag_ins_write_var : frag
     {
-        ~gen_instr_stop() final = default;
-
-        std::string get_desc() const final
-        { return "stop"; }
+        /** The variable source. */
+        frag_ref_var* src;
     };
 
     /**
-     * A generated STORE instruction.
+     * Instruction fragment. STOP. Stop the program.
      */
-    struct gen_instr_store : gen
+    struct frag_ins_stop : frag
     {
-        /** The destination variable. */
-        var* dest;
-
-        ~gen_instr_store() final = default;
-
-        std::string get_desc() const final
-        { return "store"; }
     };
 
     /**
-     * A generated variable LOAD instruction.
+     * Instruction fragment. STORE. Store from ACC to variable destination.
      */
-    struct gen_instr_load_var : gen
+    struct frag_ins_store : frag
     {
-        /** The source variable. */
-        var* src;
-
-        ~gen_instr_load_var() final = default;
-
-        std::string get_desc() const final
-        { return "variable load"; }
+        /** The variable destination. */
+        frag_ref_var* dest;
     };
 
     /**
-     * A generated immediate LOAD instruction.
+     * Instruction fragment. LOAD (imm). Load to ACC from immediate source.
      */
-    struct gen_instr_load_imm : gen
+    struct frag_ins_load_imm : frag
     {
-        /** The immediate value. */
-        int value;
-
-        ~gen_instr_load_imm() final = default;
-
-        std::string get_desc() const final
-        { return "immediate load"; }
+        /** The immediate source. */
+        int src;
     };
 
     /**
-     * A generated NOOP instruction.
+     * Instruction fragment. LOAD (var). Load to ACC from variable source.
      */
-    struct gen_instr_noop : gen
+    struct frag_ins_load_var : frag
     {
-        ~gen_instr_noop() final = default;
-
-        std::string get_desc() const final
-        { return "noop"; }
+        /** The variable source. */
+        frag_ref_var* src;
     };
 
     /**
-     * A generated PUSH instruction.
+     * Instruction fragment. NOOP. Do nothing.
      */
-    struct gen_instr_push : gen
+    struct frag_ins_noop : frag
     {
-        ~gen_instr_push() final = default;
-
-        std::string get_desc() const final
-        { return "push"; }
     };
 
     /**
-     * A generated POP instruction.
+     * Instruction fragment. PUSH. Push from ACC onto the stack.
      */
-    struct gen_instr_pop : gen
+    struct frag_ins_push : frag
     {
-        ~gen_instr_pop() final = default;
-
-        std::string get_desc() const final
-        { return "pop"; }
     };
 
     /**
-     * A generated STACKW instruction.
+     * Instruction fragment. POP. Remove the top of the stack.
      */
-    struct gen_instr_stackw : gen
+    struct frag_ins_pop : frag
+    {
+    };
+
+    /**
+     * Instruction fragment. STACKW. Read stack by offset.
+     */
+    struct frag_ins_stackw : frag
     {
         /** The stack offset. */
         int offset;
-
-        ~gen_instr_stackw() final = default;
-
-        std::string get_desc() const final
-        { return std::string("stackw"); }
     };
 
     /**
-     * A generated STACKR instruction.
+     * Instruction fragment. STACKR. Read stack by offset.
      */
-    struct gen_instr_stackr : gen
+    struct frag_ins_stackr : frag
     {
         /** The stack offset. */
         int offset;
-
-        ~gen_instr_stackr() final = default;
-
-        std::string get_desc() const final
-        { return std::string("stackr"); }
     };
 
     /**
-     * A relational operator type.
+     * A fragment indicating the variable scope narrows.
+     */
+    struct frag_scope_enter : frag
+    {
+    };
+
+    /**
+     * A fragment indicating the variable scope widens.
+     */
+    struct frag_scope_leave : frag
+    {
+    };
+
+    /**
+     * The type of a relational operator.
      */
     enum class ro_type
     {
@@ -477,22 +341,16 @@ class codegen
     /** The parse tree. */
     tree::node* m_tree;
 
-    /** The generated output code. */
+    /** The final output. */
     std::string m_output;
 
-    /** Incomplete generated output. */
+    /** The intemediate output builder. */
     std::ostringstream m_output_ss;
 
-    /** Intermediate label references. */
-    std::vector<label*> m_labels;
+    /** The intermediate program fragments. */
+    std::vector<frag*> m_frags;
 
-    /** Intermediate variable references. */
-    std::vector<var*> m_vars;
-
-    /** Intermediate generated code fragments. */
-    std::vector<gen*> m_gens;
-
-    /** Intermediate relational operator type. */
+    /** The type of the last examined relational operator. */
     ro_type m_ro_type;
 
 public:
@@ -505,29 +363,13 @@ public:
     codegen& operator=(const codegen& rhs) = delete;
 
 private:
-    /**
-     * Traverse the parse tree as part of stage 1.
-     * @param root The traversal root
-     */
     void stage_1_traverse(tree::node* root);
-
-    /**
-     * Do first stage. This generates instructions.
-     */
     void do_stage_1();
-
-    /**
-     * Do second stage. This processes variable references.
-     */
     void do_stage_2();
-
-    /**
-     * Do third stage. This processes label references.
-     */
     void do_stage_3();
 
     /**
-     * Compose the final generated code string.
+     * Compose the final output.
      */
     void compose();
 
@@ -545,7 +387,7 @@ public:
     { m_tree = p_tree; }
 
     /**
-     * @return The generated output code
+     * @return The final output
      */
     std::string get_output() const
     { return m_output; }
