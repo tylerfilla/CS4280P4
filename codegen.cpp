@@ -4,6 +4,7 @@
  * Project 4
  */
 
+#include <iostream>
 #include "codegen.h"
 
 p4::codegen::codegen()
@@ -566,17 +567,31 @@ void p4::codegen::do_stage_2()
     // Stage 2: Allocate variables
     //
 
-    // TODO: Create gens for var declarations and resolve their refs
-    // This assigns global namespace names to global variables and stack offsets for local variables
-    // This inserts stackr and stackw gens to enable local variable access
+    // TODO: Preserve initial value
 
-    for (auto&& frag_i : m_frags)
+    // The variables encountered so far
+    std::vector<std::string> vars;
+
+    // The scopes encountered so far
+    // These are indexes into the vars array
+    std::vector<int> scopes;
+
+    for (auto i = m_frags.begin(); i != m_frags.end(); ++i)
     {
+        auto&& frag_i = *i;
+
         if (auto f = dynamic_cast<frag_decl_label*>(frag_i))
         {
         }
         else if (auto f = dynamic_cast<frag_decl_var*>(frag_i))
         {
+            // Store variable in current scope
+            vars.push_back(f->name);
+
+            // Erase declaration and revalidate iterator
+            auto idx = i - m_frags.begin();
+            m_frags.erase(i);
+            i = m_frags.begin() + (idx - 1);
         }
         else if (auto f = dynamic_cast<frag_ref_label*>(frag_i))
         {
@@ -584,49 +599,114 @@ void p4::codegen::do_stage_2()
         else if (auto f = dynamic_cast<frag_ref_var*>(frag_i))
         {
         }
+        else if (auto f = dynamic_cast<frag_ins_br*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_brneg*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_brzneg*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_brpos*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_brzpos*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_brzero*>(frag_i))
+        {
+        }
         else if (auto f = dynamic_cast<frag_ins_copy*>(frag_i))
         {
-            f->dest;
-            f->src;
         }
         else if (auto f = dynamic_cast<frag_ins_add_var*>(frag_i))
         {
-            f->rhs;
+        }
+        else if (auto f = dynamic_cast<frag_ins_add_imm*>(frag_i))
+        {
         }
         else if (auto f = dynamic_cast<frag_ins_sub_var*>(frag_i))
         {
-            f->rhs;
+        }
+        else if (auto f = dynamic_cast<frag_ins_sub_imm*>(frag_i))
+        {
         }
         else if (auto f = dynamic_cast<frag_ins_div_var*>(frag_i))
         {
-            f->rhs;
+        }
+        else if (auto f = dynamic_cast<frag_ins_div_imm*>(frag_i))
+        {
         }
         else if (auto f = dynamic_cast<frag_ins_mult_var*>(frag_i))
         {
-            f->rhs;
+        }
+        else if (auto f = dynamic_cast<frag_ins_mult_imm*>(frag_i))
+        {
         }
         else if (auto f = dynamic_cast<frag_ins_read*>(frag_i))
         {
-            f->dest;
         }
         else if (auto f = dynamic_cast<frag_ins_write_var*>(frag_i))
         {
-            f->src;
+        }
+        else if (auto f = dynamic_cast<frag_ins_write_imm*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_stop*>(frag_i))
+        {
         }
         else if (auto f = dynamic_cast<frag_ins_store*>(frag_i))
         {
-            f->dest;
         }
         else if (auto f = dynamic_cast<frag_ins_load_var*>(frag_i))
         {
-            f->src;
+        }
+        else if (auto f = dynamic_cast<frag_ins_load_imm*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_noop*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_push*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_pop*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_stackw*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_stackr*>(frag_i))
+        {
         }
         else if (auto f = dynamic_cast<frag_scope_enter*>(frag_i))
         {
+            scopes.push_back(vars.size());
         }
         else if (auto f = dynamic_cast<frag_scope_leave*>(frag_i))
         {
+            // If this leave fragment does not correspond to the global scope
+            if (scopes.size() > 1)
+            {
+                // Forget all non-global variables
+                // We need the globals to stick around for proper (global) allocation later
+                vars.erase(vars.begin() + scopes.back(), vars.end());
+
+                // Pop scope
+                scopes.erase(scopes.end() - 1);
+            }
         }
+    }
+
+    // Declare global variables for real
+    for (auto&& v : vars)
+    {
+        auto f = new frag_decl_var {};
+        f->name = v;
+        m_frags.push_back(f);
+
+        // TODO: Escape them so they don't collide with temporaries
     }
 }
 
@@ -639,10 +719,18 @@ void p4::codegen::do_stage_3()
     // TODO: Create gens for label declarations and resolve their refs
     // This assigns global namespace names to labels
 
-    for (auto&& frag_i : m_frags)
+    for (auto i = m_frags.begin(); i != m_frags.end(); ++i)
     {
+        auto&& frag_i = *i;
+
         if (auto f = dynamic_cast<frag_decl_label*>(frag_i))
         {
+            // TODO: Store label
+
+            // Erase declaration and revalidate iterator
+            auto idx = i - m_frags.begin();
+            m_frags.erase(i);
+            i = m_frags.begin() + (idx - 1);
         }
         else if (auto f = dynamic_cast<frag_decl_var*>(frag_i))
         {
@@ -653,42 +741,86 @@ void p4::codegen::do_stage_3()
         else if (auto f = dynamic_cast<frag_ref_var*>(frag_i))
         {
         }
+        else if (auto f = dynamic_cast<frag_ins_br*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_brneg*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_brzneg*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_brpos*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_brzpos*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_brzero*>(frag_i))
+        {
+        }
         else if (auto f = dynamic_cast<frag_ins_copy*>(frag_i))
         {
-            f->dest;
-            f->src;
         }
         else if (auto f = dynamic_cast<frag_ins_add_var*>(frag_i))
         {
-            f->rhs;
+        }
+        else if (auto f = dynamic_cast<frag_ins_add_imm*>(frag_i))
+        {
         }
         else if (auto f = dynamic_cast<frag_ins_sub_var*>(frag_i))
         {
-            f->rhs;
+        }
+        else if (auto f = dynamic_cast<frag_ins_sub_imm*>(frag_i))
+        {
         }
         else if (auto f = dynamic_cast<frag_ins_div_var*>(frag_i))
         {
-            f->rhs;
+        }
+        else if (auto f = dynamic_cast<frag_ins_div_imm*>(frag_i))
+        {
         }
         else if (auto f = dynamic_cast<frag_ins_mult_var*>(frag_i))
         {
-            f->rhs;
+        }
+        else if (auto f = dynamic_cast<frag_ins_mult_imm*>(frag_i))
+        {
         }
         else if (auto f = dynamic_cast<frag_ins_read*>(frag_i))
         {
-            f->dest;
         }
         else if (auto f = dynamic_cast<frag_ins_write_var*>(frag_i))
         {
-            f->src;
+        }
+        else if (auto f = dynamic_cast<frag_ins_write_imm*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_stop*>(frag_i))
+        {
         }
         else if (auto f = dynamic_cast<frag_ins_store*>(frag_i))
         {
-            f->dest;
         }
         else if (auto f = dynamic_cast<frag_ins_load_var*>(frag_i))
         {
-            f->src;
+        }
+        else if (auto f = dynamic_cast<frag_ins_load_imm*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_noop*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_push*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_pop*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_stackw*>(frag_i))
+        {
+        }
+        else if (auto f = dynamic_cast<frag_ins_stackr*>(frag_i))
+        {
         }
         else if (auto f = dynamic_cast<frag_scope_enter*>(frag_i))
         {
@@ -705,13 +837,11 @@ void p4::codegen::compose()
     {
         if (auto f = dynamic_cast<frag_decl_label*>(frag_i))
         {
-//          m_output_ss << f->name << ":";
-            m_output_ss << "(declare label) " << f->name << "\n";
+            m_output_ss << f->name << ": ";
         }
         else if (auto f = dynamic_cast<frag_decl_var*>(frag_i))
         {
-//          m_output_ss << f->name << " " << f->value << "\n";
-            m_output_ss << "(declare var) " << f->name << " <- " << f->value << "\n";
+            m_output_ss << f->name << " " << f->value << "\n";
         }
         else if (auto f = dynamic_cast<frag_ref_label*>(frag_i))
         {
