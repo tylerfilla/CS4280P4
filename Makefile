@@ -5,7 +5,7 @@
 #
 
 LDFLAGS=
-CXXFLAGS=-std=c++11 -g
+CXXFLAGS=-std=c++11
 
 .PHONY: all
 all: tablegen comp
