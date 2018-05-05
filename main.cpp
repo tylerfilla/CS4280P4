@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
     }
 
     // FIXME
-    std::cout << "\n(begin generated code)\n" << codegen.get_output() << "(end)\n";
+    std::cout << codegen.get_output();
 
     return 0;
 }

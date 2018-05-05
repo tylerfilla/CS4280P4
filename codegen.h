@@ -7,8 +7,10 @@
 #ifndef P4_CODEGEN_H
 #define P4_CODEGEN_H
 
+#include <map>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "tree.h"
@@ -38,38 +40,20 @@ class codegen
      */
     struct frag_decl_label : frag
     {
-        /** The declared name of the label. */
+        /** The label name. */
         std::string name;
     };
 
     /**
-     * A variable declaration.
+     * A global variable declaration.
      */
-    struct frag_decl_var : frag
+    struct frag_decl_gvar : frag
     {
-        /** The declared name of the variable. */
+        /** The variable name. */
         std::string name;
 
-        /** The initial value of the variable. */
+        /** The initial value. */
         int value;
-    };
-
-    /**
-     * Label reference fragment.
-     */
-    struct frag_ref_label : frag
-    {
-        /** The source program label name. */
-        std::string name;
-    };
-
-    /**
-     * Variable reference fragment.
-     */
-    struct frag_ref_var : frag
-    {
-        /** The source program variable name. */
-        std::string name;
     };
 
     /**
@@ -78,7 +62,7 @@ class codegen
     struct frag_ins_br : frag
     {
         /** The branch target. */
-        frag_ref_label* target;
+        int target;
     };
 
     /**
@@ -87,7 +71,7 @@ class codegen
     struct frag_ins_brneg : frag
     {
         /** The branch target. */
-        frag_ref_label* target;
+        int target;
     };
 
     /**
@@ -96,7 +80,7 @@ class codegen
     struct frag_ins_brzneg : frag
     {
         /** The branch target. */
-        frag_ref_label* target;
+        int target;
     };
 
     /**
@@ -105,7 +89,7 @@ class codegen
     struct frag_ins_brpos : frag
     {
         /** The branch target. */
-        frag_ref_label* target;
+        int target;
     };
 
     /**
@@ -114,7 +98,7 @@ class codegen
     struct frag_ins_brzpos : frag
     {
         /** The branch target. */
-        frag_ref_label* target;
+        int target;
     };
 
     /**
@@ -123,7 +107,7 @@ class codegen
     struct frag_ins_brzero : frag
     {
         /** The branch target. */
-        frag_ref_label* target;
+        int target;
     };
 
     /**
@@ -132,10 +116,10 @@ class codegen
     struct frag_ins_copy : frag
     {
         /** The destination variable operand. */
-        frag_ref_var* dest;
+        int dest;
 
         /** The source variable operand. */
-        frag_ref_var* src;
+        int src;
     };
 
     /**
@@ -150,10 +134,10 @@ class codegen
     /**
      * Instruction fragment. ADD (var). Add variable rhs.
      */
-    struct frag_ins_add_var : frag
+    struct frag_ins_add_gvar : frag
     {
         /** The variable rhs. */
-        frag_ref_var* rhs;
+        int rhs;
     };
 
     /**
@@ -168,10 +152,10 @@ class codegen
     /**
      * Instruction fragment. SUB (var). Subtract variable rhs.
      */
-    struct frag_ins_sub_var : frag
+    struct frag_ins_sub_gvar : frag
     {
         /** The variable rhs. */
-        frag_ref_var* rhs;
+        int rhs;
     };
 
     /**
@@ -186,10 +170,10 @@ class codegen
     /**
      * Instruction fragment. DIV (var). Divide by variable rhs.
      */
-    struct frag_ins_div_var : frag
+    struct frag_ins_div_gvar : frag
     {
         /** The variable rhs. */
-        frag_ref_var* rhs;
+        int rhs;
     };
 
     /**
@@ -204,19 +188,19 @@ class codegen
     /**
      * Instruction fragment. MULT (var). Multiply by variable rhs.
      */
-    struct frag_ins_mult_var : frag
+    struct frag_ins_mult_gvar : frag
     {
         /** The variable rhs. */
-        frag_ref_var* rhs;
+        int rhs;
     };
 
     /**
      * Instruction fragment. READ. Read to variable destination.
      */
-    struct frag_ins_read : frag
+    struct frag_ins_read_gvar : frag
     {
         /** The variable destination. */
-        frag_ref_var* dest;
+        int dest;
     };
 
     /**
@@ -231,10 +215,10 @@ class codegen
     /**
      * Instruction fragment. WRITE (var). Write from variable source.
      */
-    struct frag_ins_write_var : frag
+    struct frag_ins_write_gvar : frag
     {
         /** The variable source. */
-        frag_ref_var* src;
+        int src;
     };
 
     /**
@@ -247,10 +231,10 @@ class codegen
     /**
      * Instruction fragment. STORE. Store from ACC to variable destination.
      */
-    struct frag_ins_store : frag
+    struct frag_ins_store_gvar : frag
     {
         /** The variable destination. */
-        frag_ref_var* dest;
+        int dest;
     };
 
     /**
@@ -265,10 +249,10 @@ class codegen
     /**
      * Instruction fragment. LOAD (var). Load to ACC from variable source.
      */
-    struct frag_ins_load_var : frag
+    struct frag_ins_load_gvar : frag
     {
         /** The variable source. */
-        frag_ref_var* src;
+        int src;
     };
 
     /**
@@ -311,20 +295,6 @@ class codegen
     };
 
     /**
-     * A fragment indicating the variable scope narrows.
-     */
-    struct frag_scope_enter : frag
-    {
-    };
-
-    /**
-     * A fragment indicating the variable scope widens.
-     */
-    struct frag_scope_leave : frag
-    {
-    };
-
-    /**
      * The type of a relational operator.
      */
     enum class ro_type
@@ -350,6 +320,18 @@ class codegen
     /** The intermediate program fragments. */
     std::vector<frag*> m_frags;
 
+    /** A map of global variables and their initial values. */
+    std::map<int, std::pair<std::string, int>> m_globals;
+
+    /** The intermediate variable names. */
+    std::vector<std::string> m_vars;
+
+    /** The intermediate scope boundaries. */
+    std::vector<int> m_scopes;
+
+    /** The ordinal to give to next next global variable. */
+    int m_next_global;
+
     /** The type of the last examined relational operator. */
     ro_type m_ro_type;
 
@@ -363,13 +345,41 @@ public:
     codegen& operator=(const codegen& rhs) = delete;
 
 private:
-    void stage_1_traverse(tree::node* root);
-    void do_stage_1();
-    void do_stage_2();
-    void do_stage_3();
+    /**
+     * Enter a scope.
+     */
+    void push_scope();
 
     /**
-     * Compose the final output.
+     * Leave a scope.
+     */
+    void pop_scope();
+
+    /**
+     * Find a variable's in-scope location by name.
+     *
+     * @param name The variable name
+     * @return The variable location
+     */
+    int locate_variable(std::string name);
+
+    /**
+     * Declare a temporary global variable. Some generated instructions are not
+     * compatible with local variables, so this closes the gap.
+     *
+     * @param value The initial value (default 0)
+     * @return The variable location
+     */
+    int make_temp_gvar(int value = 0);
+
+    /**
+     * Do a code generation traversal.
+     * @param root The tree root
+     */
+    void traverse(tree::node* root);
+
+    /**
+     * Perform final output composition.
      */
     void compose();
 
