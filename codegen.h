@@ -329,8 +329,14 @@ class codegen
     /** The intermediate scope boundaries. */
     std::vector<int> m_scopes;
 
-    /** The ordinal to give to next next global variable. */
+    /** The number to assign to the next global variable. */
     int m_next_global;
+
+    /** The reserved-so-far labels. */
+    std::map<int, std::string> m_labels;
+
+    /** The number to assign to the next label. */
+    int m_next_label;
 
     /** The type of the last examined relational operator. */
     ro_type m_ro_type;
@@ -367,10 +373,26 @@ private:
      * Declare a temporary global variable. Some generated instructions are not
      * compatible with local variables, so this closes the gap.
      *
+     * @param name The variable name (default "")
      * @param value The initial value (default 0)
      * @return The variable location
      */
-    int make_temp_gvar(int value = 0);
+    int make_temp_gvar(std::string name = "", int value = 0);
+
+    /**
+     * Reserve a new label.
+     *
+     * @param name The label name
+     * @return The label number
+     */
+    int reserve_label(std::string name = "");
+
+    /**
+     * Append a label declaration fragment for the given label.
+     *
+     * @param label The label number
+     */
+    void place_label(int label);
 
     /**
      * Do a code generation traversal.

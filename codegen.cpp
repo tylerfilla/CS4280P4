@@ -16,6 +16,8 @@ p4::codegen::codegen()
         , m_vars {}
         , m_scopes {}
         , m_next_global(-1)
+        , m_labels {}
+        , m_next_label(0)
         , m_ro_type {}
 {
 }
@@ -71,10 +73,10 @@ int p4::codegen::locate_variable(std::string name)
                 // The variable is global
                 // Look up its ordinal value
 
-                for (auto&& p : m_globals)
+                for (auto&& g : m_globals)
                 {
-                    if (p.second.first == name)
-                        return p.first;
+                    if (g.second.first == name)
+                        return g.first;
                 }
             }
             else
@@ -94,19 +96,51 @@ int p4::codegen::locate_variable(std::string name)
     return 0;
 }
 
-int p4::codegen::make_temp_gvar(int value)
+int p4::codegen::make_temp_gvar(std::string name, int value)
 {
     int var = m_next_global--;
 
     // Build name
     std::ostringstream ss;
-    ss << "TMP";
-    ss << -var;
+    ss << "TMP" << -var << "_" << name;
 
     // Map variable
     m_globals[var] = std::make_pair(ss.str(), value);
 
     return var;
+}
+
+int p4::codegen::reserve_label(std::string name)
+{
+    int label = m_next_label++;
+
+    // Build name
+    std::ostringstream ss;
+    ss << "JMP" << label << "_" << name;
+
+    // Map label
+    m_labels[label] = ss.str();
+
+    return label;
+}
+
+void p4::codegen::place_label(int label)
+{
+    // If the last fragment so far is already a label
+    // This is problematic, as two labels cannot follow back-to-back
+    if (auto l = dynamic_cast<frag_decl_label*>(m_frags.back()))
+    {
+        // Insert a no-op instruction
+        m_frags.push_back(new frag_ins_noop {});
+    }
+
+    // Look up label name
+    auto&& name = m_labels[label];
+
+    // Insert label declaration
+    auto i = new frag_decl_label {};
+    i->name = name;
+    m_frags.push_back(i);
 }
 
 void p4::codegen::traverse(tree::node* root)
@@ -497,27 +531,19 @@ void p4::codegen::traverse(tree::node* root)
             i->src = tmp;
             m_frags.push_back(i);
         }
-    }/*
+    }
     else if (auto node = dynamic_cast<tree::node_if*>(root))
     {
         // Call rhs
         traverse(node->nd_rhs);
 
-        // Declare temporary variable
-        auto tmp_name = get_tmp_var_name();
-        auto tmp = new frag_decl_gvar {};
-        tmp->name = tmp_name;
-        m_frags.push_back(tmp);
+        // Create temporary global
+        int tmp = make_temp_gvar();
 
         // Store rhs value (acc) to rhs (tmp)
         {
-            auto v = new frag_ref_gvar {};
-            v->name = tmp_name;
-            v->io_write = true;
-            m_frags.push_back(v);
-
             auto i = new frag_ins_store_gvar {};
-            i->dest = v;
+            i->dest = tmp;
             m_frags.push_back(i);
         }
 
@@ -526,23 +552,16 @@ void p4::codegen::traverse(tree::node* root)
 
         // Subtract rhs (tmp) from lhs (acc)
         {
-            auto v = new frag_ref_gvar {};
-            v->name = tmp_name;
-            v->io_read = true;
-            m_frags.push_back(v);
-
             auto i = new frag_ins_sub_gvar {};
-            i->rhs = v;
+            i->rhs = tmp;
             m_frags.push_back(i);
         }
 
-        // Call operator
-        // This does not generate code
+        // Call operator (not code-generating)
         traverse(node->nd_operator);
 
-        // Create jump label
-        auto jmp = new frag_ref_label {};
-        jmp->name = "";
+        // Make jump label
+        int jmp = reserve_label("iff");
 
         // Handle operator
         switch (m_ro_type)
@@ -624,9 +643,9 @@ void p4::codegen::traverse(tree::node* root)
         // Call body block
         traverse(node->nd_body);
 
-        // Append jump label after body
-        m_frags.push_back(jmp);
-    }*/
+        // Place jump label
+        place_label(jmp);
+    }
     else if (auto node = dynamic_cast<tree::node_loop*>(root))
     {
         // TODO: Implement loop
@@ -723,32 +742,32 @@ void p4::codegen::compose()
         else if (auto f = dynamic_cast<frag_ins_br*>(frag_i))
         {
             // TODO
-            m_output_ss << "BR <ref_label>\n";
+            m_output_ss << "BR " << m_labels[f->target] << "\n";
         }
         else if (auto f = dynamic_cast<frag_ins_brneg*>(frag_i))
         {
             // TODO
-            m_output_ss << "BRNEG <ref_label>\n";
+            m_output_ss << "BRNEG " << m_labels[f->target] << "\n";
         }
         else if (auto f = dynamic_cast<frag_ins_brzneg*>(frag_i))
         {
             // TODO
-            m_output_ss << "BRZNEG <ref_label>\n";
+            m_output_ss << "BRZNEG " << m_labels[f->target] << "\n";
         }
         else if (auto f = dynamic_cast<frag_ins_brpos*>(frag_i))
         {
             // TODO
-            m_output_ss << "BRPOS <ref_label>\n";
+            m_output_ss << "BRPOS " << m_labels[f->target] << "\n";
         }
         else if (auto f = dynamic_cast<frag_ins_brzpos*>(frag_i))
         {
             // TODO
-            m_output_ss << "BRZPOS <ref_label>\n";
+            m_output_ss << "BRZPOS " << m_labels[f->target] << "\n";
         }
         else if (auto f = dynamic_cast<frag_ins_brzero*>(frag_i))
         {
             // TODO
-            m_output_ss << "BRZERO <ref_label>\n";
+            m_output_ss << "BRZERO " << m_labels[f->target] << "\n";
         }
         else if (auto f = dynamic_cast<frag_ins_copy*>(frag_i))
         {
