@@ -25,10 +25,9 @@ class codegen
 {
     /**
      * A generated program fragment. This represents a piece of the final
-     * program, such as an arithmetic instruction or a variable reference. Some
-     * bookkeeping fragments also exist, such as variable scope indicators. This
+     * program, such as an arithmetic instruction or a label declaration. This
      * technique creates a flat view of the generated program, rather than a
-     * tree view, which makes storage and label allocation/renaming easier.
+     * tree view, which makes optimization and variable/label renaming easy.
      */
     struct frag
     {
@@ -362,6 +361,15 @@ private:
     void pop_scope();
 
     /**
+     * Mangle a user variable so that it doesn't collide with any keywords,
+     * temporaries, or other fixtures in the target language.
+     *
+     * @param name The variable name
+     * @return The mangled varible name
+     */
+    std::string mangle_user_variable(std::string name);
+
+    /**
      * Find a variable's in-scope location by name.
      *
      * @param name The variable name
@@ -395,13 +403,21 @@ private:
     void place_label(int label);
 
     /**
-     * Do a code generation traversal.
+     * Do a code generation traversal. This contributes to the array of abstract
+     * code fragments, which can then be easily translated into an executable
+     * string form.
+     *
      * @param root The tree root
      */
     void traverse(tree::node* root);
 
     /**
-     * Perform final output composition.
+     * Optimize the generated code fragments.
+     */
+    void optimize();
+
+    /**
+     * Perform final output composition. This builds the executable string.
      */
     void compose();
 
