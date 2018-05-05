@@ -862,7 +862,40 @@ void p4::codegen::traverse(tree::node* root)
 
 void p4::codegen::optimize()
 {
-    // TODO
+    frag* frag_prev = nullptr;
+
+    for (auto i = m_frags.begin(); i != m_frags.end(); ++i)
+    {
+        if (auto f1 = dynamic_cast<frag_ins_store_gvar*>(*i))
+        {
+            if (!frag_prev)
+                continue;
+
+            if (auto f2 = dynamic_cast<frag_ins_load_gvar*>(frag_prev))
+            {
+                int dest = f1->dest;
+                int src = f2->src;
+
+                delete f1;
+                delete f2;
+
+                // Replace store with direct copy
+                {
+                    auto c = new frag_ins_copy {};
+                    c->dest = dest;
+                    c->src = src;
+                    *i = c;
+                }
+
+                // Erase load
+                auto idx = i - m_frags.begin();
+                m_frags.erase(i - 1, i);
+                i = m_frags.begin() + idx;
+            }
+        }
+
+        frag_prev = *i;
+    }
 }
 
 void p4::codegen::compose()
