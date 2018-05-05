@@ -570,7 +570,7 @@ void p4::codegen::traverse(tree::node* root)
             {
                 // OP: Less than
 
-                // Jump if diff >= 0
+                // Bail if diff >= 0
                 auto i = new frag_ins_brzpos {};
                 i->target = jmp;
                 m_frags.push_back(i);
@@ -580,7 +580,7 @@ void p4::codegen::traverse(tree::node* root)
             {
                 // OP: Less than or equal to
 
-                // Jump if diff > 0
+                // Bail if diff > 0
                 auto i = new frag_ins_brpos {};
                 i->target = jmp;
                 m_frags.push_back(i);
@@ -590,7 +590,7 @@ void p4::codegen::traverse(tree::node* root)
             {
                 // OP: Greater than
 
-                // Jump if diff <= 0
+                // Bail if diff <= 0
                 auto i = new frag_ins_brzneg {};
                 i->target = jmp;
                 m_frags.push_back(i);
@@ -600,7 +600,7 @@ void p4::codegen::traverse(tree::node* root)
             {
                 // OP: Greater than or equal to
 
-                // Jump if diff < 0
+                // Bail if diff < 0
                 auto i = new frag_ins_brneg {};
                 i->target = jmp;
                 m_frags.push_back(i);
@@ -610,14 +610,14 @@ void p4::codegen::traverse(tree::node* root)
             {
                 // OP: Equal to
 
-                // Jump if diff < 0
+                // Bail if diff < 0
                 {
                     auto i = new frag_ins_brneg {};
                     i->target = jmp;
                     m_frags.push_back(i);
                 }
 
-                // Jump if diff > 0
+                // Bail if diff > 0
                 {
                     auto i = new frag_ins_brpos {};
                     i->target = jmp;
@@ -629,7 +629,7 @@ void p4::codegen::traverse(tree::node* root)
             {
                 // OP: Not equal to
 
-                // Jump if diff == 0
+                // Bail if diff == 0
                 auto i = new frag_ins_brzero {};
                 i->target = jmp;
                 m_frags.push_back(i);
@@ -640,7 +640,7 @@ void p4::codegen::traverse(tree::node* root)
         // Reset operator type
         m_ro_type = ro_type::NONE;
 
-        // Call body block
+        // Call body statement
         traverse(node->nd_body);
 
         // Place jump label
@@ -648,7 +648,128 @@ void p4::codegen::traverse(tree::node* root)
     }
     else if (auto node = dynamic_cast<tree::node_loop*>(root))
     {
-        // TODO: Implement loop
+        // Reserve in and out jump labels
+        int jmp_in = reserve_label("iter_in");
+        int jmp_out = reserve_label("iter_out");
+
+        // Place in jump label
+        place_label(jmp_in);
+
+        // Call rhs
+        traverse(node->nd_rhs);
+
+        // Create temporary global
+        int tmp = make_temp_gvar();
+
+        // Store rhs value (acc) to rhs (tmp)
+        {
+            auto i = new frag_ins_store_gvar {};
+            i->dest = tmp;
+            m_frags.push_back(i);
+        }
+
+        // Call lhs
+        traverse(node->nd_lhs);
+
+        // Subtract rhs (tmp) from lhs (acc)
+        {
+            auto i = new frag_ins_sub_gvar {};
+            i->rhs = tmp;
+            m_frags.push_back(i);
+        }
+
+        // Call operator (not code-generating)
+        traverse(node->nd_operator);
+
+        // Handle operator
+        switch (m_ro_type)
+        {
+        case ro_type::LT:
+            {
+                // OP: Less than
+
+                // Bail if diff >= 0
+                auto i = new frag_ins_brzpos {};
+                i->target = jmp_out;
+                m_frags.push_back(i);
+            }
+            break;
+        case ro_type::LTE:
+            {
+                // OP: Less than or equal to
+
+                // Bail if diff > 0
+                auto i = new frag_ins_brpos {};
+                i->target = jmp_out;
+                m_frags.push_back(i);
+            }
+            break;
+        case ro_type::GT:
+            {
+                // OP: Greater than
+
+                // Bail if diff <= 0
+                auto i = new frag_ins_brzneg {};
+                i->target = jmp_out;
+                m_frags.push_back(i);
+            }
+            break;
+        case ro_type::GTE:
+            {
+                // OP: Greater than or equal to
+
+                // Bail if diff < 0
+                auto i = new frag_ins_brneg {};
+                i->target = jmp_out;
+                m_frags.push_back(i);
+            }
+            break;
+        case ro_type::EQ:
+            {
+                // OP: Equal to
+
+                // Bail if diff < 0
+                {
+                    auto i = new frag_ins_brneg {};
+                    i->target = jmp_out;
+                    m_frags.push_back(i);
+                }
+
+                // Bail if diff > 0
+                {
+                    auto i = new frag_ins_brpos {};
+                    i->target = jmp_out;
+                    m_frags.push_back(i);
+                }
+            }
+            break;
+        case ro_type::NEQ:
+            {
+                // OP: Not equal to
+
+                // Bail if diff == 0
+                auto i = new frag_ins_brzero {};
+                i->target = jmp_out;
+                m_frags.push_back(i);
+            }
+            break;
+        }
+
+        // Reset operator type
+        m_ro_type = ro_type::NONE;
+
+        // Call body statment
+        traverse(node->nd_body);
+
+        // Jump back in
+        {
+            auto i = new frag_ins_br {};
+            i->target = jmp_in;
+            m_frags.push_back(i);
+        }
+
+        // Place out jump label
+        place_label(jmp_out);
     }
     else if (auto node = dynamic_cast<tree::node_assign*>(root))
     {
@@ -707,7 +828,7 @@ void p4::codegen::traverse(tree::node* root)
         // If not "not equal to", it's just "equal to"
         if (m_ro_type == ro_type::NONE)
         {
-            m_ro_type = ro_type::EQ;
+            m_ro_type = ro_type::NEQ;
         }
     }
     else if (auto node = dynamic_cast<tree::node_RO_lt*>(root))
@@ -723,7 +844,7 @@ void p4::codegen::traverse(tree::node* root)
     else if (auto node = dynamic_cast<tree::node_RO_eq*>(root))
     {
         // Not equal to
-        m_ro_type = ro_type::NEQ;
+        m_ro_type = ro_type::EQ;
     }
 }
 
@@ -741,37 +862,30 @@ void p4::codegen::compose()
         }
         else if (auto f = dynamic_cast<frag_ins_br*>(frag_i))
         {
-            // TODO
             m_output_ss << "BR " << m_labels[f->target] << "\n";
         }
         else if (auto f = dynamic_cast<frag_ins_brneg*>(frag_i))
         {
-            // TODO
             m_output_ss << "BRNEG " << m_labels[f->target] << "\n";
         }
         else if (auto f = dynamic_cast<frag_ins_brzneg*>(frag_i))
         {
-            // TODO
             m_output_ss << "BRZNEG " << m_labels[f->target] << "\n";
         }
         else if (auto f = dynamic_cast<frag_ins_brpos*>(frag_i))
         {
-            // TODO
             m_output_ss << "BRPOS " << m_labels[f->target] << "\n";
         }
         else if (auto f = dynamic_cast<frag_ins_brzpos*>(frag_i))
         {
-            // TODO
             m_output_ss << "BRZPOS " << m_labels[f->target] << "\n";
         }
         else if (auto f = dynamic_cast<frag_ins_brzero*>(frag_i))
         {
-            // TODO
             m_output_ss << "BRZERO " << m_labels[f->target] << "\n";
         }
         else if (auto f = dynamic_cast<frag_ins_copy*>(frag_i))
         {
-            // TODO
             m_output_ss << "COPY <ref_var> <ref_var>\n";
         }
         else if (auto f = dynamic_cast<frag_ins_add_gvar*>(frag_i))
