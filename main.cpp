@@ -99,8 +99,16 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    // FIXME
-    std::cout << codegen.get_output();
+    // Build output file name
+    std::string output_file_name = "out.asm";
+    if (argc > 1)
+    {
+        output_file_name = std::string(argv[1]) + ".asm";
+    }
+
+    // Print output
+    std::ofstream out(output_file_name);
+    out << codegen.get_output();
 
     return 0;
 }
