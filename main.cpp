@@ -56,13 +56,14 @@ int main(int argc, char* argv[])
     }
     catch (const p4::scanner_error& e)
     {
-        std::cerr << "an error has occurred while scanning the input\n";
+        std::cerr << "compilation failed: error found during scan\n";
+        std::cerr << "error: line: " << e.get_line() << ", col: " << e.get_column() << "\n";
         std::cerr << "error: " << e.really_what() << "\n";
         return 1;
     }
     catch (const p4::parser_error& e)
     {
-        std::cerr << "an error has occurred while parsing the input\n";
+        std::cerr << "compilation failed: error found during parse\n";
         std::cerr << "error: " << e.really_what() << "\n";
         return 1;
     }
@@ -80,7 +81,7 @@ int main(int argc, char* argv[])
     }
     catch (const p4::analyzer_error& e)
     {
-        std::cerr << "an error has occurred while analyzing the input\n";
+        std::cerr << "compilation failed: error found during analysis\n";
         std::cerr << "error: " << e.really_what() << "\n";
         return 1;
     }
@@ -95,7 +96,8 @@ int main(int argc, char* argv[])
     }
     catch (const std::exception& e)
     {
-        std::cerr << "an error has occurred: " << e.what() << "\n";
+        std::cerr << "compilation failed: unexpected error during code generation\n";
+        std::cerr << "error: " << e.what() << "\n";
         return 1;
     }
 
